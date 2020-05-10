@@ -16,7 +16,7 @@ from utils.util_flow import readPFM
 
 
 def default_loader(path):
-    return Image.open(path).convert('RGB')
+    return Image.open(path) # Image.open(path).convert('RGB')
 
 def flow_loader(path):
     if '.pfm' in path:
@@ -61,8 +61,8 @@ class myImageFloder(data.Dataset):
         iml1 = self.loader(iml1)
         iml1 = np.asarray(iml1)/255.
         iml0 = np.asarray(iml0)/255.
-        iml0 = iml0[:,:,::-1].copy()
-        iml1 = iml1[:,:,::-1].copy()
+        iml0 = iml0[:,:,None].copy() # iml0[:,:,::-1].copy()
+        iml1 = iml1[:,:,None].copy() # iml1[:,:,::-1].copy()
         flowl0 = self.dploader(flowl0)
         flowl0 = np.ascontiguousarray(flowl0,dtype=np.float32)
         flowl0[np.isnan(flowl0)] = 1e6 # set to max
