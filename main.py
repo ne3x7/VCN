@@ -423,8 +423,8 @@ def main():
                 log.scalar_summary('train/loss_batch', loss, total_iters)
                 log.scalar_summary('train/aepe_batch', vis['AEPE'], total_iters)
             if total_iters % 100 == 0:
-                log.image_summary('train/left', imgL_crop[0:1], total_iters)
-                log.image_summary('train/right', imgR_crop[0:1], total_iters)
+                log.image_summary('train/left', imgL_crop[0:1].float()+torch.from_numpy(np.asarray(mean_L).mean(0)[np.newaxis, :, np.newaxis, np.newaxis]).float(), total_iters)
+                log.image_summary('train/right', imgR_crop[0:1].float()+torch.from_numpy(np.asarray(mean_R).mean(0)[np.newaxis, :, np.newaxis, np.newaxis]).float(), total_iters)
                 log.histo_summary('train/pred_hist', vis['output2'], total_iters)
                 if len(np.asarray(vis['gt'])) > 0:
                     log.histo_summary('train/gt_hist', np.asarray(vis['gt']), total_iters)
