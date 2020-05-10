@@ -7,6 +7,8 @@ Github: https://github.com/senthilps8
 Description: 
 """
 import pdb
+import sys
+
 import tensorflow as tf
 from torch.autograd import Variable
 from PIL import Image
@@ -54,6 +56,7 @@ class Logger(object):
             try:
                 Image.fromarray(img).save(s, format="png")
             except AttributeError as e:
+                print(img.shape, file=sys.stderr)
                 Image.fromarray(img.transpose(0, 2).detach().numpy()).save(s, format="png")
 
             # Create an Image object
