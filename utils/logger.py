@@ -9,6 +9,7 @@ Description:
 import pdb
 import tensorflow as tf
 from torch.autograd import Variable
+from PIL import Image
 import numpy as np
 import scipy.misc
 import os
@@ -50,7 +51,7 @@ class Logger(object):
                 s = StringIO()
             except:
                 s = BytesIO()
-            scipy.misc.toimage(img).save(s, format="png")
+            Image.fromarray(img).save(s, format="png")
 
             # Create an Image object
             img_sum = tf.Summary.Image(encoded_image_string=s.getvalue(),
