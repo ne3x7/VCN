@@ -56,6 +56,7 @@ class Logger(object):
             try:
                 Image.fromarray(img).save(s, format="png")
             except AttributeError as e:
+                print(img.max(), img.min(), file=sys.stderr)
                 Image.fromarray(img.squeeze(0).detach().numpy()).save(s, format="png")
 
             # Create an Image object
