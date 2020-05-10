@@ -51,7 +51,10 @@ class Logger(object):
                 s = StringIO()
             except:
                 s = BytesIO()
-            Image.fromarray(img).save(s, format="png")
+            try:
+                Image.fromarray(img).save(s, format="png")
+            except AttributeError as e:
+                Image.fromarray(img.detach().numpy()).save(s, format="png")
 
             # Create an Image object
             img_sum = tf.Summary.Image(encoded_image_string=s.getvalue(),
