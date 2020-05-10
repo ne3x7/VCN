@@ -450,7 +450,7 @@ def main():
                                   total_iters)
                 log.image_summary('train/output6', flow_to_image(vis['output6'][0].transpose((1, 2, 0)))[np.newaxis],
                                   total_iters)
-                log.image_summary('train/oor', vis['oor'][np.newaxis], total_iters)
+                log.image_summary('train/oor', 255 * (np.clip(vis['oor'][np.newaxis], -1, 1) + 1) / 2, total_iters)
                 torch.cuda.empty_cache()
             total_iters += 1
             # get global counts                
