@@ -276,7 +276,7 @@ def train(imgL, imgR, flowl0):
     imgL, imgR, flowl0 = imgL.cuda(), imgR.cuda(), flowl0.cuda()
     mask = (flowl0[:, :, :, 2] == 1) & (flowl0[:, :, :, 0].abs() < args.maxdisp) & (
             flowl0[:, :, :, 1].abs() < (args.maxdisp // args.fac))
-    mask.detach_();
+    mask.detach_()
 
     # rearrange inputs
     groups = []
@@ -432,7 +432,7 @@ def main():
                 log.histo_summary('train/pred_hist', vis['output2'], total_iters)
                 if len(np.asarray(vis['gt'])) > 0:
                     log.histo_summary('train/gt_hist', np.asarray(vis['gt']), total_iters)
-                gu = vis['gt'][0, :, :, 0];
+                gu = vis['gt'][0, :, :, 0]
                 gv = vis['gt'][0, :, :, 1]
                 gu = gu * np.asarray(vis['mask'][0].float().cpu())
                 gv = gv * np.asarray(vis['mask'][0].float().cpu())
@@ -461,8 +461,8 @@ def main():
                 # SAVE
                 savefilename = args.savemodel + '/' + args.logname + '/finetune_' + str(total_iters) + '.tar'
                 save_dict = model.state_dict()
-                save_dict = collections.OrderedDict(
-                    {k: v for k, v in save_dict.items() if ('flow_reg' not in k or 'conv1' in k) and ('grid' not in k)})
+                # save_dict = collections.OrderedDict(
+                #     {k: v for k, v in save_dict.items() if ('flow_reg' not in k or 'conv1' in k) and ('grid' not in k)})
                 torch.save({
                     'iters': total_iters,
                     'state_dict': save_dict,

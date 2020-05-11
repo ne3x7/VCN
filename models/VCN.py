@@ -316,7 +316,7 @@ class VCN(nn.Module):
         else:
             cost = Variable(torch.FloatTensor(b, c, 2 * maxdisp + 1, 2 * int(maxdisp // fac) + 1, height, width)).fill_(
                 0.)  # b,c,u,v,h,w
-        print(cost.shape)
+        # print(cost.shape)
         for i in range(2 * maxdisp + 1):
             ind = i - maxdisp
             for j in range(2 * int(maxdisp // fac) + 1):
@@ -326,7 +326,7 @@ class VCN(nn.Module):
                 diff = (feata * featb)
                 cost[:, :, i, j, max(0, -indd):height - indd, max(0, -ind):width - ind] = diff
         cost = F.leaky_relu(cost, 0.1, inplace=True)
-        print(cost.shape)
+        # print(cost.shape)
         return cost
 
     def get_oor_loss(self, flowl0, oor3, maxdisp, occ_mask):
@@ -374,10 +374,10 @@ class VCN(nn.Module):
         c12n = c12 / (c12.norm(dim=1, keepdim=True) + 1e-9)
         c22n = c22 / (c22.norm(dim=1, keepdim=True) + 1e-9)
 
-        print(c16.shape)
+        # print(c16.shape)
         ## matching 6
         feat6 = self.corrf(c16n, c26n, self.md[0], fac=self.fac)
-        print(feat6.shape)
+        # print(feat6.shape)
         feat6 = self.f6(feat6)
         cost6 = self.p6(feat6)  # b, 16, u,v,h,w
 
