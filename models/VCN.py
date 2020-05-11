@@ -4,6 +4,7 @@ implementation of the PWC-DC network for optical flow estimation by Sun et al., 
 Jinwei Gu and Zhile Ren
 
 """
+import sys
 
 import torch
 import torch.nn as nn
@@ -348,15 +349,15 @@ class VCN(nn.Module):
         bs = im.shape[0] // 2
 
         c06, c05, c04, c03, c02 = self.pspnet(im)
-        c16 = c06[:bs];
+        c16 = c06[:bs]
         c26 = c06[bs:]
-        c15 = c05[:bs];
+        c15 = c05[:bs]
         c25 = c05[bs:]
-        c14 = c04[:bs];
+        c14 = c04[:bs]
         c24 = c04[bs:]
-        c13 = c03[:bs];
+        c13 = c03[:bs]
         c23 = c03[bs:]
-        c12 = c02[:bs];
+        c12 = c02[:bs]
         c22 = c02[bs:]
 
         # normalize
@@ -371,11 +372,13 @@ class VCN(nn.Module):
         c12n = c12 / (c12.norm(dim=1, keepdim=True) + 1e-9)
         c22n = c22 / (c22.norm(dim=1, keepdim=True) + 1e-9)
 
+        print(c16.shape, file=sys.stderr)
         ## matching 6
         if self.training or (not im.is_cuda):
             feat6 = self.corrf(c16n, c26n, self.md[0], fac=self.fac)
         else:
             feat6 = self.corr(c16n, c26n, self.md[0], fac=self.fac)
+        print(feat6.shape, file=sys.stderr)
         feat6 = self.f6(feat6)
         cost6 = self.p6(feat6)  # b, 16, u,v,h,w
 

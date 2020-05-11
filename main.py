@@ -423,10 +423,10 @@ def main():
                 log.scalar_summary('train/loss_batch', loss, total_iters)
                 log.scalar_summary('train/aepe_batch', vis['AEPE'], total_iters)
             if total_iters % 100 == 0:
-                log.image_summary('train/left', (imgL_crop[0:1].float() + \
+                log.image_summary('train/left', (imgL_crop[0:1].float() +
                                                  torch.from_numpy(np.asarray(mean_L).mean(0)[np.newaxis, :, np.newaxis,
                                                                   np.newaxis]).float()).squeeze(0) * 255, total_iters)
-                log.image_summary('train/right', (imgR_crop[0:1].float() + \
+                log.image_summary('train/right', (imgR_crop[0:1].float() +
                                                   torch.from_numpy(np.asarray(mean_R).mean(0)[np.newaxis, :, np.newaxis,
                                                                    np.newaxis]).float()).squeeze(0) * 255, total_iters)
                 log.histo_summary('train/pred_hist', vis['output2'], total_iters)
@@ -434,7 +434,7 @@ def main():
                     log.histo_summary('train/gt_hist', np.asarray(vis['gt']), total_iters)
                 gu = vis['gt'][0, :, :, 0];
                 gv = vis['gt'][0, :, :, 1]
-                gu = gu * np.asarray(vis['mask'][0].float().cpu());
+                gu = gu * np.asarray(vis['mask'][0].float().cpu())
                 gv = gv * np.asarray(vis['mask'][0].float().cpu())
                 mask = vis['mask'][0].float().cpu()
                 log.image_summary('train/gt0', flow_to_image(

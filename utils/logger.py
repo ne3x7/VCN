@@ -54,7 +54,6 @@ class Logger(object):
             except:
                 s = BytesIO()
             try:
-                print(img.max(), img.min(), file=sys.stderr)
                 Image.fromarray(img.astype(np.uint8)).convert("L").save(s, format="png")
             except AttributeError as e:
                 Image.fromarray(img.detach().numpy().astype(np.uint8)).convert("L").save(s, format="png")
