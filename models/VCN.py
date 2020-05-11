@@ -372,13 +372,13 @@ class VCN(nn.Module):
         c12n = c12 / (c12.norm(dim=1, keepdim=True) + 1e-9)
         c22n = c22 / (c22.norm(dim=1, keepdim=True) + 1e-9)
 
-        print(c16.shape, file=sys.stderr)
+        print(c16.shape)
         ## matching 6
         if self.training or (not im.is_cuda):
             feat6 = self.corrf(c16n, c26n, self.md[0], fac=self.fac)
         else:
             feat6 = self.corr(c16n, c26n, self.md[0], fac=self.fac)
-        print(feat6.shape, file=sys.stderr)
+        print(feat6.shape)
         feat6 = self.f6(feat6)
         cost6 = self.p6(feat6)  # b, 16, u,v,h,w
 
