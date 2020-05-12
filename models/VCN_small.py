@@ -347,10 +347,7 @@ class VCN(nn.Module):
         c23n = c23 / (c23.norm(dim=1, keepdim=True)+1e-9)
 
         ## matching 6
-        if self.training:
-            feat6 = self.corrf(c16n,c26n,self.md[0],fac=self.fac)
-        else:
-            feat6 = self.corr(c16n,c26n,self.md[0],fac=self.fac)
+        feat6 = self.corrf(c16n,c26n,self.md[0],fac=self.fac)
         feat6 = self.f6(feat6) 
         cost6 = self.p6(feat6) # b, 16, u,v,h,w
 
@@ -375,10 +372,7 @@ class VCN(nn.Module):
         ## matching 5
         up_flow6 = F.upsample(flow6, [im.size()[2]//32,im.size()[3]//32], mode='bilinear')*2
         warp5,_ = self.warp5(c25n, up_flow6)
-        if self.training:
-            feat5 = self.corrf(c15n,warp5,self.md[1])
-        else:
-            feat5 = self.corr(c15n,warp5,self.md[1])
+        feat5 = self.corrf(c15n,warp5,self.md[1])
         feat5 = self.f5(feat5) 
         cost5 = self.p5(feat5) # b, 16, u,v,h,w
 
@@ -409,10 +403,7 @@ class VCN(nn.Module):
         ## matching 4
         up_flow5 = F.upsample(flow5, [im.size()[2]//16,im.size()[3]//16], mode='bilinear')*2
         warp4,_ = self.warp4(c24n, up_flow5)
-        if self.training:
-            feat4 = self.corrf(c14n,warp4,self.md[2])
-        else:
-            feat4 = self.corr(c14n,warp4,self.md[2])
+        feat4 = self.corrf(c14n,warp4,self.md[2])
         feat4 = self.f4(feat4) 
         cost4 = self.p4(feat4) # b, 16, u,v,h,w
 
@@ -443,10 +434,7 @@ class VCN(nn.Module):
         ## matching 3
         up_flow4 = F.upsample(flow4, [im.size()[2]//8,im.size()[3]//8], mode='bilinear')*2
         warp3,_ = self.warp3(c23n, up_flow4)
-        if self.training:
-            feat3 = self.corrf(c13n,warp3,self.md[3])
-        else:
-            feat3 = self.corr(c13n,warp3,self.md[3])
+        feat3 = self.corrf(c13n,warp3,self.md[3])
         feat3 = self.f3(feat3) 
         cost3 = self.p3(feat3) # b, 16, u,v,h,w
 
