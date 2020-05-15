@@ -43,7 +43,9 @@ parser.add_argument('--retrain', default='false',
 parser.add_argument('--stage', default='chairs',
                     help='one of {chairs, things, 2015train, 2015trainval, sinteltrain, sinteltrainval}')
 parser.add_argument('--ngpus', type=int, default=2,
-                    help='number of gpus to use.')
+                    help='number of gpus to use')
+parser.add_argument('--prob', type=float, default=1.0,
+                    help='probability of augmentation.')
 args = parser.parse_args()
 
 if args.model == 'VCN':
@@ -142,21 +144,21 @@ elif args.stage == 'pivtrainval':
 
 if 'piv' in args.stage:
     iml0, iml1, flowl0 = lp.dataloader('%s/backstep/' % args.database)
-    loader_backstep = dr.myImageFloder(iml0, iml1, flowl0, shape=datashape, scale=1, order=1, noise=0)
+    loader_backstep = dr.myImageFloder(iml0, iml1, flowl0, shape=datashape, scale=1, order=1, noise=0, prob=args.prob)
     iml0, iml1, flowl0 = lp.dataloader('%s/DNS_turbulence/' % args.database)
-    loader_turbulence = dr.myImageFloder(iml0, iml1, flowl0, shape=datashape, scale=1, order=1, noise=0)
+    loader_turbulence = dr.myImageFloder(iml0, iml1, flowl0, shape=datashape, scale=1, order=1, noise=0, prob=args.prob)
     iml0, iml1, flowl0 = lp.dataloader('%s/JHTDB_channel_hd/' % args.database)
-    loader_channel = dr.myImageFloder(iml0, iml1, flowl0, shape=datashape, scale=1, order=1, noise=0)
+    loader_channel = dr.myImageFloder(iml0, iml1, flowl0, shape=datashape, scale=1, order=1, noise=0, prob=args.prob)
     iml0, iml1, flowl0 = lp.dataloader('%s/JHTDB_mhd1024_hd/' % args.database)
-    loader_mhd = dr.myImageFloder(iml0, iml1, flowl0, shape=datashape, scale=1, order=1, noise=0)
+    loader_mhd = dr.myImageFloder(iml0, iml1, flowl0, shape=datashape, scale=1, order=1, noise=0, prob=args.prob)
     iml0, iml1, flowl0 = lp.dataloader('%s/uniform/' % args.database)
-    loader_uniform = dr.myImageFloder(iml0, iml1, flowl0, shape=datashape, scale=1, order=1, noise=0)
+    loader_uniform = dr.myImageFloder(iml0, iml1, flowl0, shape=datashape, scale=1, order=1, noise=0, prob=args.prob)
     iml0, iml1, flowl0 = lp.dataloader('%s/cylinder/' % args.database)
-    loader_cylinder = dr.myImageFloder(iml0, iml1, flowl0, shape=datashape, scale=1, order=1, noise=0)
+    loader_cylinder = dr.myImageFloder(iml0, iml1, flowl0, shape=datashape, scale=1, order=1, noise=0, prob=args.prob)
     iml0, iml1, flowl0 = lp.dataloader('%s/JHTDB_isotropic1024_hd/' % args.database)
-    loader_isotropic = dr.myImageFloder(iml0, iml1, flowl0, shape=datashape, scale=1, order=1, noise=0)
+    loader_isotropic = dr.myImageFloder(iml0, iml1, flowl0, shape=datashape, scale=1, order=1, noise=0, prob=args.prob)
     iml0, iml1, flowl0 = lp.dataloader('%s/SQG/' % args.database)
-    loader_sqg = dr.myImageFloder(iml0, iml1, flowl0, shape=datashape, scale=1, order=1, noise=0)
+    loader_sqg = dr.myImageFloder(iml0, iml1, flowl0, shape=datashape, scale=1, order=1, noise=0, prob=args.prob)
 
 if args.stage == 'chairs':
     data_inuse = torch.utils.data.ConcatDataset([loader_chairs] * 100)

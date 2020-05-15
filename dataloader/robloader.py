@@ -82,11 +82,6 @@ class myImageFloder(data.Dataset):
         schedule_coeff = schedule[0] + (schedule[1] - schedule[0]) * \
                          (2 / (1 + np.exp(-1.0986 * iter_counts / schedule[2])) - 1)
 
-        if self.pca_augmentor:
-            pca_augmentor = flow_transforms.pseudoPCAAug(schedule_coeff=schedule_coeff)
-        else:
-            pca_augmentor = flow_transforms.Scale(1., order=0)
-
         if np.random.binomial(1, self.prob):
             co_transform = flow_transforms.Compose([
                 flow_transforms.Scale(self.scale, order=self.order),
@@ -100,8 +95,7 @@ class myImageFloder(data.Dataset):
             ])
         else:
             co_transform = flow_transforms.Compose([
-                flow_transforms.Scale(self.scale, order=self.order),
-                flow_transforms.SpatialAug([th, tw], trans=[0.4, 0.03], order=self.order, black=self.black)
+                flow_transforms.Scale(1., order=0)
             ])
 
         augmented, flowl0 = co_transform([iml0, iml1], flowl0)
