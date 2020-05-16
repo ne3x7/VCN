@@ -143,16 +143,16 @@ class SpatialAug(object):
                 mirror = True
             else:
                 mirror = False
-            ##TODO
+            # TODO
             # mirror = False
             if mirror:
-                self.left_multiply(-1, 0, 0, 1, .5 * tw, -.5 * th);
+                self.left_multiply(-1, 0, 0, 1, .5 * tw, -.5 * th)
             else:
-                self.left_multiply(1, 0, 0, 1, -.5 * tw, -.5 * th);
-            scale0 = 1;
-            scale1 = 1;
-            squeeze0 = 1;
-            squeeze1 = 1;
+                self.left_multiply(1, 0, 0, 1, -.5 * tw, -.5 * th)
+            scale0 = 1
+            scale1 = 1
+            squeeze0 = 1
+            squeeze1 = 1
             if not self.rot is None:
                 rot0 = np.random.uniform(-self.rot[0], +self.rot[0])
                 rot1 = np.random.uniform(-self.rot[1] * self.schedule_coeff, self.rot[1] * self.schedule_coeff) + rot0

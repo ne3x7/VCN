@@ -360,25 +360,48 @@ def adjust_learning_rate(optimizer, total_iters):
         elif total_iters < 850000:
             lr = baselr / 80.
     if lr_schedule == 'rob_ours':
-        if total_iters < 30000:
+        if total_iters < 43000:
             lr = baselr
-        elif total_iters < 40000:
+        elif total_iters < 57000:
             lr = baselr / 2.
-        elif total_iters < 50000:
+        elif total_iters < 71000:
             lr = baselr / 4.
-        elif total_iters < 60000:
+        elif total_iters < 86000:
             lr = baselr / 8.
-        elif total_iters < 70000:
-            lr = baselr / 16.
         elif total_iters < 100000:
-            lr = baselr
-        elif total_iters < 110000:
-            lr = baselr / 2.
-        elif total_iters < 120000:
-            lr = baselr / 4.
-        elif total_iters < 130000:
-            lr = baselr / 8.
+            lr = baselr / 16.
+            # restart
         elif total_iters < 140000:
+            lr = baselr
+        elif total_iters < 160000:
+            lr = baselr / 2.
+        elif total_iters < 170000:
+            lr = baselr / 4.
+        elif total_iters < 180000:
+            lr = baselr / 8.
+        elif total_iters < 200000:
+            lr = baselr / 16.
+            # restart
+        elif total_iters < 220000:
+            lr = baselr
+        elif total_iters < 230000:
+            lr = baselr / 2.
+        elif total_iters < 240000:
+            lr = baselr / 4.
+        elif total_iters < 250000:
+            lr = baselr / 8.
+        elif total_iters < 270000:
+            lr = baselr / 16.
+            # restart
+        elif total_iters < 280000:
+            lr = baselr
+        elif total_iters < 290000:
+            lr = baselr / 2.
+        elif total_iters < 300000:
+            lr = baselr / 4.
+        elif total_iters < 310000:
+            lr = baselr / 8.
+        elif total_iters < 330000:
             lr = baselr / 16.
     print(lr)
     for param_group in optimizer.param_groups:

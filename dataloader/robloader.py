@@ -78,17 +78,38 @@ class myImageFloder(data.Dataset):
                 iter_counts = int(f.readline())
         except:
             iter_counts = 0
-        schedule = [0.5, 1., 50000.]  # initial coeff, final_coeff, half life
-        schedule_coeff = schedule[0] + (schedule[1] - schedule[0]) * \
-                         (2 / (1 + np.exp(-1.0986 * iter_counts / schedule[2])) - 1)
+        # schedule = [0.5, 1., 25000.]  # initial coeff, final_coeff, half life
+        schedule_coeff = 0 # schedule[0] + (schedule[1] - schedule[0]) * \
+                           # (2 / (1 + np.exp(-1.0986 * iter_counts / schedule[2])) - 1)
+
+        schedule_aug = [1., 0., 50000.]  # initial coeff, final_coeff, half life
+        schedule_aug_coeff = schedule_aug[0] + (schedule_aug[1] - schedule_aug[0]) * \
+                             (2 / (1 + np.exp(-1.0986 * iter_counts / schedule_aug[2])) - 1)
 
         if np.random.binomial(1, self.prob):
+            scl = 0.2*schedule_aug_coeff
+            if scl > 0:
+                scl = [0.2*schedule_aug_coeff, 0., 0.2*schedule_aug_coeff]
+            else:
+                scl = None
+            rot = 0.17*schedule_aug_coeff
+            if rot > 0:
+                rot = [0.17*schedule_aug_coeff, 0.0]
+            else:
+                rot = None
+            trans = 0.2*schedule_aug_coeff
+            if trans > 0:
+                trans = [0.2*schedule_aug_coeff, 0.0]
+            else:
+                trans = None
+
             co_transform = flow_transforms.Compose([
                 flow_transforms.Scale(self.scale, order=self.order),
-                flow_transforms.SpatialAug([th, tw], scale=[0.4, 0.03, 0.2],
-                                           rot=[0.4, 0.03],
-                                           trans=[0.4, 0.03],
-                                           squeeze=[0.3, 0.], schedule_coeff=schedule_coeff, order=self.order,
+                flow_transforms.SpatialAug([th, tw], scale=scl,
+                                           rot=rot,
+                                           trans=trans,
+                                           schedule_coeff=schedule_coeff,
+                                           order=self.order,
                                            black=self.black),
                 # flow_transforms.PCAAug(schedule_coeff=schedule_coeff),
                 # flow_transforms.ChromaticAug(schedule_coeff=schedule_coeff, noise=self.noise),
