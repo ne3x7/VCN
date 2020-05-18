@@ -3,6 +3,8 @@ import sys
 
 from PIL import Image
 
+from utils.flowlib import flow_to_image
+
 sys.path.insert(0,'utils/')
 #sys.path.insert(0,'dataloader/')
 sys.path.insert(0,'models/')
@@ -216,8 +218,9 @@ def main():
         elif args.dataset == 'k15stereo' or args.dataset == 'k12stereo':
             skimage.io.imsave('%s/%s/%s.png'% (args.outdir, args.dataset,idxname.split('.')[0]),(-flow[:,:,0].astype(np.float32)*256).astype('uint16'))
         else:
-            write_flow('%s/%s/%s.png'% (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), flow.copy())
-        cv2.imwrite('%s/%s/ent-%s.png'% (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), entropy*200)
+            # write_flow('%s/%s/%s.png'% (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), flow.copy())
+            cv2.imwrite('%s/%s/%s.png' % (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), flow_to_image(flow))
+        # cv2.imwrite('%s/%s/ent-%s.png'% (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), entropy*200)
             
         torch.cuda.empty_cache()
     print(np.mean(ttime_all))
