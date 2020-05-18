@@ -198,7 +198,8 @@ def main():
         pred_disp[:,:,1] *= input_size[0] / max_h
         flow = np.ones([pred_disp.shape[0],pred_disp.shape[1],3])
         flow[:,:,:2] = pred_disp
-        rmses += np.linalg.norm(pred_disp - flo, ord=2, axis=-1).mean()
+        rmse = np.linalg.norm(flow - flo, ord=2, axis=-1).mean()
+        rmses += rmse
         nrmses += rmse / np.linalg.norm(flo, ord=2, axis=-1).mean()
         entropy = torch.squeeze(entropy).data.cpu().numpy()
         entropy = cv2.resize(entropy, (input_size[1], input_size[0]))
