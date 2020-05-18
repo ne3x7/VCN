@@ -103,7 +103,7 @@ elif args.dataset == 'k12stereo':
     from dataloader import stereo_kittilist12 as DA
     maxw,maxh = [int(args.testres*1280), int(args.testres*384)]
     test_left_img, test_right_img ,_,_,_,_= DA.dataloader(args.datapath)
-elif 'piv' in args.stage:
+elif 'piv' in args.dataset:
     from dataloader import pivlist_val as DA
 
     test_left_img, test_right_img, _ = DA.dataloader('%s/SQG/' % args.datapath)
