@@ -283,10 +283,7 @@ def train(imgL, imgR, flowl0):
     mask = (flowl0[:, :, :, 2] == 1) & (flowl0[:, :, :, 0].abs() < args.maxdisp) & (
             flowl0[:, :, :, 1].abs() < (args.maxdisp // args.fac))
     mask.detach_()
-    print(mask.sum())
-    print(mask.sum(), file=sys.stderr)
-    print(np.prod(datashape))
-    print(np.prod(datashape), file=sys.stderr)
+    assert np.allclose(mask[0].float().cpu().numpy(), np.ones_like(mask[0].float().cpu().numpy()))
 
     # rearrange inputs
     groups = []
