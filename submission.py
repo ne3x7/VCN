@@ -3,7 +3,7 @@ import sys
 
 from PIL import Image
 
-from utils.flowlib import flow_to_image
+from utils.flowlib import flow_to_image, read_flow
 
 sys.path.insert(0,'utils/')
 #sys.path.insert(0,'dataloader/')
@@ -108,7 +108,7 @@ elif args.dataset == 'k12stereo':
 elif 'piv' in args.dataset:
     from dataloader import pivlist_val as DA
 
-    test_left_img, test_right_img, _ = DA.dataloader('%s/SQG/' % args.datapath)
+    test_left_img, test_right_img, test_flow = DA.dataloader('%s/SQG/' % args.datapath)
     maxw, maxh = [256 * args.testres, 256 * args.testres]
 if args.dataset == 'chairs':
     with open('FlyingChairs_train_val.txt', 'r') as f:
@@ -152,6 +152,7 @@ def main():
     ttime_all = []
     for inx in range(len(test_left_img)):
         print(test_left_img[inx])
+        flo = read_flow(test_flow[inx])
         imgL_o = np.asarray(Image.open(test_left_img[inx]))
         imgR_o = np.asarray(Image.open(test_right_img[inx]))
 
@@ -220,6 +221,7 @@ def main():
         else:
             # write_flow('%s/%s/%s.png'% (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), flow.copy())
             cv2.imwrite('%s/%s/%s.png' % (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), flow_to_image(flow))
+            cv2.imwrite('%s/%s/%s-gt.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]), flow_to_image(flo))
         # cv2.imwrite('%s/%s/ent-%s.png'% (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), entropy*200)
             
         torch.cuda.empty_cache()
