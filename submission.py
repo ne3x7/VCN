@@ -152,6 +152,9 @@ def main():
         print(test_left_img[inx])
         imgL_o = np.asarray(Image.open(test_left_img[inx]))[:, :, None]
         imgR_o = np.asarray(Image.open(test_right_img[inx]))[:, :, None]
+        assert imgL_o.shape == (256, 256, 1), imgL_o.shape
+        assert imgR_o.shape == (256, 256, 1), imgR_o.shape
+        print(np.asarray(mean_L).mean(0)[np.newaxis,np.newaxis,:].shape)
 
         # resize
         maxh = imgL_o.shape[0]*args.testres
