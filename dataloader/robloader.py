@@ -79,27 +79,30 @@ class myImageFloder(data.Dataset):
         except:
             iter_counts = 0
         # schedule = [0.5, 1., 25000.]  # initial coeff, final_coeff, half life
-        schedule_coeff = 0 # schedule[0] + (schedule[1] - schedule[0]) * \
-                           # (2 / (1 + np.exp(-1.0986 * iter_counts / schedule[2])) - 1)
+        schedule_coeff = 0  # schedule[0] + (schedule[1] - schedule[0]) * \
+        # (2 / (1 + np.exp(-1.0986 * iter_counts / schedule[2])) - 1)
 
         schedule_aug = [1., 0., 50000.]  # initial coeff, final_coeff, half life
-        schedule_aug_coeff = schedule_aug[0] + (schedule_aug[1] - schedule_aug[0]) * \
-                             (2 / (1 + np.exp(-1.0986 * iter_counts / schedule_aug[2])) - 1)
+        # schedule_aug_coeff = schedule_aug[0] + (schedule_aug[1] - schedule_aug[0]) * \
+        #                      (2 / (1 + np.exp(-1.0986 * iter_counts / schedule_aug[2])) - 1)
+        # linear decay
+        schedule_aug_coeff = schedule_aug[0] + (schedule_aug[1] - schedule_aug[0]) \
+                             * max(1., iter_counts / (2 * schedule_aug[2]))
 
         if np.random.binomial(1, self.prob):
-            scl = 0.2*schedule_aug_coeff
+            scl = 0.2 * schedule_aug_coeff
             if scl > 0:
-                scl = [0.2*schedule_aug_coeff, 0., 0.2*schedule_aug_coeff]
+                scl = [0.2 * schedule_aug_coeff, 0., 0.2 * schedule_aug_coeff]
             else:
                 scl = None
-            rot = 0.17*schedule_aug_coeff
+            rot = 0.17 * schedule_aug_coeff
             if rot > 0:
-                rot = [0.17*schedule_aug_coeff, 0.0]
+                rot = [0.17 * schedule_aug_coeff, 0.0]
             else:
                 rot = None
-            trans = 0.2*schedule_aug_coeff
+            trans = 0.2 * schedule_aug_coeff
             if trans > 0:
-                trans = [0.2*schedule_aug_coeff, 0.0]
+                trans = [0.2 * schedule_aug_coeff, 0.0]
             else:
                 trans = None
 

@@ -258,6 +258,8 @@ if args.loadmodel is not None:
     model.load_state_dict(pretrained_dict['state_dict'], strict=False)
     if args.retrain == 'true':
         print('re-training')
+        with open('./iter_counts-%d.txt' % int(args.logname.split('-')[-1]), 'r') as f:
+            total_iters = int(f.readline())
     else:
         with open('./iter_counts-%d.txt' % int(args.logname.split('-')[-1]), 'r') as f:
             total_iters = int(f.readline())
