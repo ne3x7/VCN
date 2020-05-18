@@ -1,5 +1,8 @@
 from __future__ import print_function
 import sys
+
+from PIL.Image import Image
+
 sys.path.insert(0,'utils/')
 #sys.path.insert(0,'dataloader/')
 sys.path.insert(0,'models/')
@@ -99,7 +102,12 @@ elif args.dataset == 'k15stereo':
 elif args.dataset == 'k12stereo':
     from dataloader import stereo_kittilist12 as DA
     maxw,maxh = [int(args.testres*1280), int(args.testres*384)]
-    test_left_img, test_right_img ,_,_,_,_= DA.dataloader(args.datapath)  
+    test_left_img, test_right_img ,_,_,_,_= DA.dataloader(args.datapath)
+elif 'piv' in args.stage:
+    from dataloader import pivlist_val as DA
+
+    test_left_img, test_right_img, _ = DA.dataloader(args.datapath)
+    maxw, maxh = [256 * args.testres, 256 * args.testres]
 if args.dataset == 'chairs':
     with open('FlyingChairs_train_val.txt', 'r') as f:
         split = [int(i) for i in f.readlines()]
@@ -129,8 +137,8 @@ if args.loadmodel is not None:
 
     model.load_state_dict(pretrained_dict['state_dict'],strict=False)
 else:
-    mean_L = [[0.33,0.33,0.33]]
-    mean_R = [[0.33,0.33,0.33]]
+    mean_L = [[1.]]
+    mean_R = [[1.]]
     print('dry run')
 
 print('Number of model parameters: {}'.format(sum([p.data.nelement() for p in model.parameters()])))
@@ -142,13 +150,8 @@ def main():
     ttime_all = []
     for inx in range(len(test_left_img)):
         print(test_left_img[inx])
-        imgL_o = skimage.io.imread(test_left_img[inx])
-        imgR_o = skimage.io.imread(test_right_img[inx])
-
-        # for gray input images
-        if len(imgL_o.shape) == 2:
-            imgL_o = np.tile(imgL_o[:,:,np.newaxis],(1,1,3))
-            imgR_o = np.tile(imgR_o[:,:,np.newaxis],(1,1,3))
+        imgL_o = np.asarray(Image.open(test_left_img[inx]))[:, :, None]
+        imgR_o = np.asarray(Image.open(test_right_img[inx]))[:, :, None]
 
         # resize
         maxh = imgL_o.shape[0]*args.testres
@@ -163,8 +166,8 @@ def main():
         imgR = cv2.resize(imgR_o,(max_w, max_h))
 
         # flip channel, subtract mean
-        imgL = imgL[:,:,::-1].copy() / 255. - np.asarray(mean_L).mean(0)[np.newaxis,np.newaxis,:]
-        imgR = imgR[:,:,::-1].copy() / 255. - np.asarray(mean_R).mean(0)[np.newaxis,np.newaxis,:]
+        imgL = imgL.copy() / 255. - np.asarray(mean_L).mean(0)[np.newaxis,np.newaxis,:]
+        imgR = imgR.copy() / 255. - np.asarray(mean_R).mean(0)[np.newaxis,np.newaxis,:]
         imgL = np.transpose(imgL, [2,0,1])[np.newaxis]
         imgR = np.transpose(imgR, [2,0,1])[np.newaxis]
 
