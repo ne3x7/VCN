@@ -145,11 +145,13 @@ else:
 
 print('Number of model parameters: {}'.format(sum([p.data.nelement() for p in model.parameters()])))
 
-
 mkdir_p('%s/%s/'% (args.outdir, args.dataset))
 def main():
     model.eval()
     ttime_all = []
+
+    rmses = 0
+    nrmses = 0
     for inx in range(len(test_left_img)):
         print(test_left_img[inx])
         flo = read_flow(test_flow[inx])
@@ -196,6 +198,8 @@ def main():
         pred_disp[:,:,1] *= input_size[0] / max_h
         flow = np.ones([pred_disp.shape[0],pred_disp.shape[1],3])
         flow[:,:,:2] = pred_disp
+        rmses += np.linalg.norm(pred_disp - flo, ord=2, axis=-1).mean()
+        nrmses += rmse / np.linalg.norm(flo, ord=2, axis=-1).mean()
         entropy = torch.squeeze(entropy).data.cpu().numpy()
         entropy = cv2.resize(entropy, (input_size[1], input_size[0]))
 
@@ -220,12 +224,14 @@ def main():
             skimage.io.imsave('%s/%s/%s.png'% (args.outdir, args.dataset,idxname.split('.')[0]),(-flow[:,:,0].astype(np.float32)*256).astype('uint16'))
         else:
             # write_flow('%s/%s/%s.png'% (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), flow.copy())
-            cv2.imwrite('%s/%s/%s.png' % (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), flow_to_image(flow))
-            cv2.imwrite('%s/%s/%s-gt.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]), flow_to_image(flo))
+            # cv2.imwrite('%s/%s/%s.png' % (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), flow_to_image(flow))
+            # cv2.imwrite('%s/%s/%s-gt.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]), flow_to_image(flo))
         # cv2.imwrite('%s/%s/ent-%s.png'% (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), entropy*200)
             
         torch.cuda.empty_cache()
-    print(np.mean(ttime_all))
+    rmses /= len(test_left_img)
+    nrmses /= len(test_left_img)
+    print(np.mean(ttime_all), rmses, nrmses)
                 
             
 
