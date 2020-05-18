@@ -1,7 +1,7 @@
 from __future__ import print_function
 import sys
 
-from PIL.Image import Image
+from PIL import Image
 
 sys.path.insert(0,'utils/')
 #sys.path.insert(0,'dataloader/')
