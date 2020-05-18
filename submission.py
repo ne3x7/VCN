@@ -150,8 +150,8 @@ def main():
     ttime_all = []
     for inx in range(len(test_left_img)):
         print(test_left_img[inx])
-        imgL_o = np.asarray(Image.open(test_left_img[inx]))[:, :, None]
-        imgR_o = np.asarray(Image.open(test_right_img[inx]))[:, :, None]
+        imgL_o = np.asarray(Image.open(test_left_img[inx]))
+        imgR_o = np.asarray(Image.open(test_right_img[inx]))
 
         # resize
         maxh = imgL_o.shape[0]*args.testres
@@ -166,8 +166,9 @@ def main():
         imgR = cv2.resize(imgR_o,(max_w, max_h))
 
         # flip channel, subtract mean
-        imgL = imgL.copy() / 255. - np.asarray(mean_L).mean(0)[np.newaxis,np.newaxis,:]
-        imgR = imgR.copy() / 255. - np.asarray(mean_R).mean(0)[np.newaxis,np.newaxis,:]
+        imgL = imgL[:, :, None].copy() / 255. - np.asarray(mean_L).mean(0)[np.newaxis,np.newaxis,:]
+        imgR = imgR[:, :, None].copy() / 255. - np.asarray(mean_R).mean(0)[np.newaxis,np.newaxis,:]
+        print(imgL.shape)
         imgL = np.transpose(imgL, [2,0,1])[np.newaxis]
         imgR = np.transpose(imgR, [2,0,1])[np.newaxis]
 
@@ -176,7 +177,6 @@ def main():
         imgR = Variable(torch.FloatTensor(imgR).cuda())
         with torch.no_grad():
             imgLR = torch.cat([imgL,imgR],0)
-            print(imgLR.shape)
             model.eval()
             torch.cuda.synchronize()
             start_time = time.time()
