@@ -106,7 +106,7 @@ elif args.dataset == 'k12stereo':
 elif 'piv' in args.stage:
     from dataloader import pivlist_val as DA
 
-    test_left_img, test_right_img, _ = DA.dataloader(args.datapath)
+    test_left_img, test_right_img, _ = DA.dataloader('%s/SQG/' % args.datapath)
     maxw, maxh = [256 * args.testres, 256 * args.testres]
 if args.dataset == 'chairs':
     with open('FlyingChairs_train_val.txt', 'r') as f:
