@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import sys
+
 import cv2
 
 cv2.setNumThreads(0)
@@ -281,6 +283,10 @@ def train(imgL, imgR, flowl0):
     mask = (flowl0[:, :, :, 2] == 1) & (flowl0[:, :, :, 0].abs() < args.maxdisp) & (
             flowl0[:, :, :, 1].abs() < (args.maxdisp // args.fac))
     mask.detach_()
+    print(mask.sum())
+    print(mask.sum(), file=sys.stderr)
+    print(np.prod(datashape))
+    print(np.prod(datashape), file=sys.stderr)
 
     # rearrange inputs
     groups = []
