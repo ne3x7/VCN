@@ -222,7 +222,7 @@ def main():
                 f.write(str(ttime))
         elif args.dataset == 'k15stereo' or args.dataset == 'k12stereo':
             skimage.io.imsave('%s/%s/%s.png'% (args.outdir, args.dataset,idxname.split('.')[0]),(-flow[:,:,0].astype(np.float32)*256).astype('uint16'))
-        else:
+        # else:
             # write_flow('%s/%s/%s.png'% (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), flow.copy())
             # cv2.imwrite('%s/%s/%s.png' % (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), flow_to_image(flow))
             # cv2.imwrite('%s/%s/%s-gt.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]), flow_to_image(flo))
