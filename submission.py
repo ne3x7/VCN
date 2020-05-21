@@ -9,6 +9,8 @@ sys.path.insert(0,'utils/')
 #sys.path.insert(0,'dataloader/')
 sys.path.insert(0,'models/')
 import cv2
+import os
+import re
 import pdb
 import argparse
 import numpy as np
@@ -18,6 +20,8 @@ import torch.nn as nn
 import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torch.utils.data
+from matplotlib import pyplot as plt
+from scipy.interpolate import RectBivariateSpline
 from torch.autograd import Variable
 import time
 from utils.io import mkdir_p
@@ -105,10 +109,17 @@ elif args.dataset == 'k12stereo':
     from dataloader import stereo_kittilist12 as DA
     maxw,maxh = [int(args.testres*1280), int(args.testres*384)]
     test_left_img, test_right_img ,_,_,_,_= DA.dataloader(args.datapath)
-elif 'piv' in args.dataset:
+elif 'piv' in args.dataset or 'piv' in args.datapath:
     from dataloader import pivlist_val as DA
 
-    test_left_img, test_right_img, test_flow = DA.dataloader('%s/SQG/' % args.datapath)
+    # test_left_img, test_right_img, test_flow = DA.dataloader('%s/uniform/' % args.datapath)
+    with open('/trinity/home/y.maximov/kolya/piv/VCN/test_%s.txt' % args.dataset, 'r') as f:
+        fnames = f.readlines()
+    fnames = [os.path.join(args.datapath, args.dataset, fname) for fname in fnames]
+    test_left_img = [fname.rstrip() for fname in fnames]
+    test_right_img = [re.sub('img1', 'img2', fname).rstrip() for fname in fnames]
+    test_flow = [re.sub('img1.tif', 'flow.flo', fname).rstrip() for fname in fnames]
+    print(test_flow)
     maxw, maxh = [256 * args.testres, 256 * args.testres]
 if args.dataset == 'chairs':
     with open('FlyingChairs_train_val.txt', 'r') as f:
@@ -144,6 +155,35 @@ else:
     print('dry run')
 
 print('Number of model parameters: {}'.format(sum([p.data.nelement() for p in model.parameters()])))
+
+def arrow_pic(field, fname):
+    s = np.array(field.shape[:-1])
+    sz = np.min(s / 40)
+    
+    Y, X = s
+    ys = np.arange(0.5, Y, sz)
+    ny = len(ys)
+    xs = np.arange(0.5, X, sz)
+    nx = len(xs)
+    x_mesh, y_mesh = np.meshgrid(xs, ys, indexing='ij')
+    
+    ipu = RectBivariateSpline(np.arange(X), np.arange(Y), field[..., 0])
+    uz_mesh = np.zeros_like(x_mesh)
+    for i in range(nx):
+        for j in range(ny):
+            uz_mesh[i,j] = ipu(x_mesh[i,j], y_mesh[i,j])
+            
+    ipv = RectBivariateSpline(np.arange(X), np.arange(Y), field[..., 1])
+    vz_mesh = np.zeros_like(x_mesh)
+    for i in range(nx):
+        for j in range(ny):
+            vz_mesh[i,j] = ipv(x_mesh[i,j], y_mesh[i,j])
+            
+    fig, ax = plt.subplots(figsize=(10,10))
+    ax.imshow(flow_to_image(field))
+    ax.quiver(xs, ys, uz_mesh, vz_mesh, angles='xy')
+    ax.axis('off')
+    fig.savefig(fname)
 
 mkdir_p('%s/%s/'% (args.outdir, args.dataset))
 def main():
@@ -223,10 +263,12 @@ def main():
                 f.write(str(ttime))
         elif args.dataset == 'k15stereo' or args.dataset == 'k12stereo':
             skimage.io.imsave('%s/%s/%s.png'% (args.outdir, args.dataset,idxname.split('.')[0]),(-flow[:,:,0].astype(np.float32)*256).astype('uint16'))
-        # else:
+        else:
             # write_flow('%s/%s/%s.png'% (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), flow.copy())
-            # cv2.imwrite('%s/%s/%s.png' % (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), flow_to_image(flow))
-            # cv2.imwrite('%s/%s/%s-gt.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]), flow_to_image(flo))
+            cv2.imwrite('%s/%s/%s.png' % (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), flow_to_image(flow)[:, :, ::-1])
+            cv2.imwrite('%s/%s/%s-gt.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]), flow_to_image(flo)[:, :, ::-1])
+            arrow_pic(flo, '%s/%s/%s-vec-gt.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]))
+            arrow_pic(flow, '%s/%s/%s-vec.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]))
         # cv2.imwrite('%s/%s/ent-%s.png'% (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), entropy*200)
             
         torch.cuda.empty_cache()
