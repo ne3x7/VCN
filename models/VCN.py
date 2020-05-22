@@ -555,7 +555,7 @@ class VCN(nn.Module):
 
         ## matching 1
         up_flow2 = F.upsample(flow2, [im.size()[2] // 2, im.size()[3] // 2], mode='bilinear') * 2
-        warp1, _ = self.warp2(c21n, up_flow2)
+        warp1, _ = self.warp1(c21n, up_flow2)
         feat1 = self.corrf(c11n, warp1, self.md[4])
         feat1 = self.f2(feat1)
         cost1 = self.p2(feat1)  # b, 16, u,v,h,w
