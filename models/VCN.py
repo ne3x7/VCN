@@ -407,6 +407,7 @@ class VCN(nn.Module):
 
         # soft WTA
         b, c, u, v, h, w = cost6.shape
+        print('6 COARSE SHAPE', cost6.shape)
         cost6 = cost6.view(-1, u, v, h, w)  # bx16, 9,9,h,w, also predict uncertainty from here
         flow6h, ent6h = self.flow_reg64(cost6)  # bx16, 2, h, w
         flow6h = flow6h.view(bs, -1, h, w)  # b, 16*2, h, w
