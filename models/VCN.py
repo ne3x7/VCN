@@ -153,9 +153,9 @@ class VCN(nn.Module):
 
         ## Volumetric-UNet
         fdima1 = 128  # 6/5/4
-        fdima2 = 64  # 3/2
+        fdima2 = 64  # 3/2/1
         fdimb1 = 16  # 6/5/4/3
-        fdimb2 = 12  # 2
+        fdimb2 = 12  # 2/1
 
         full = False
         self.f6 = butterfly4D(fdima1, fdimb1, withbn=withbn, full=full)
