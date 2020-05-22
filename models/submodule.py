@@ -216,15 +216,15 @@ class pspnet(nn.Module):
 
     def forward(self, x):
         # H, W -> H/2, W/2
-        conv1 = self.convbnrelu1_1(x)
-        conv1 = self.convbnrelu1_2(conv1)
-        conv1 = self.convbnrelu1_3(conv1)
+        conv1 = self.convbnrelu1_1(x)  # 1, h, w -> 16, h/2, w/2
+        conv1 = self.convbnrelu1_2(conv1)  # 16, h/2, w/2 -> 16, h/2, w/2
+        conv1 = self.convbnrelu1_3(conv1)  # 16, h/2, w/2 -> 32, h/2, w/2
 
         ## H/2, W/2 -> H/4, W/4
-        pool1 = F.max_pool2d(conv1, 3, 2, 1)
+        pool1 = F.max_pool2d(conv1, 3, 2, 1)  # 32, h/2, w/2 -> 32, h/4, w/4
 
         # H/4, W/4 -> H/16, W/16
-        conv2 = self.res_block3(pool1)
+        conv2 = self.res_block2(pool1)
         conv3 = self.res_block3(conv2)
         conv4 = self.res_block5(conv3)
         conv5 = self.res_block6(conv4)
