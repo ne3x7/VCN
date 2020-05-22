@@ -246,7 +246,8 @@ else:
 print('%d batches per epoch' % (len(data_inuse) // batch_size))
 
 # TODO
-model = VCN([batch_size // ngpus] + data_inuse.datasets[0].shape[::-1], md=[int(4 * (args.maxdisp / 256)), 4, 4, 4, 4],
+model = VCN([batch_size // ngpus] + data_inuse.datasets[0].shape[::-1],
+            md=[int(4 * (args.maxdisp / 256)), 4, 4, 4, 4],
             fac=args.fac)
 model = nn.DataParallel(model)
 model.cuda()
@@ -281,6 +282,7 @@ def train(imgL, imgR, flowl0):
     flowl0 = Variable(torch.FloatTensor(flowl0))
 
     imgL, imgR, flowl0 = imgL.cuda(), imgR.cuda(), flowl0.cuda()
+    print('DATALOADER OUT SHAPE', imgL.shape)
     mask = (flowl0[:, :, :, 2] == 1) & (flowl0[:, :, :, 0].abs() < args.maxdisp) & (
             flowl0[:, :, :, 1].abs() < (args.maxdisp // args.fac))
     mask.detach_()
