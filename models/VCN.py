@@ -400,8 +400,9 @@ class VCN(nn.Module):
 
         # print(c16.shape)
         ## matching 6
+        print(c16n.shape)
         feat6 = self.corrf(c16n, c26n, self.md[0], fac=self.fac)
-        # print(feat6.shape)
+        print(feat6.shape)
         feat6 = self.f6(feat6)
         cost6 = self.p6(feat6)  # b, 16, u,v,h,w
 
