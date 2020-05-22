@@ -183,6 +183,7 @@ class VCN(nn.Module):
                                    maxdisp=self.md[2])
         self.flow_reg8 = flow_reg([fdimb1 * size[0], size[1] // 8, size[2] // 8], ent=use_entropy, maxdisp=self.md[3])
         self.flow_reg4 = flow_reg([fdimb2 * size[0], size[1] // 4, size[2] // 4], ent=use_entropy, maxdisp=self.md[4])
+        self.flow_reg2 = flow_reg([fdimb2 * size[0], size[1] // 2, size[2] // 2], ent=use_entropy, maxdisp=self.md[4])
 
         ## warping modules
         self.warp5 = WarpModule([size[0], size[1] // 32, size[2] // 32])
@@ -229,6 +230,7 @@ class VCN(nn.Module):
         self.dc3_conv5 = conv(96, 64, kernel_size=3, stride=1, padding=16, dilation=16)
         self.dc3_conv6 = conv(64, 32, kernel_size=3, stride=1, padding=1, dilation=1)
         self.dc3_conv7 = nn.Conv2d(32, 8 * fdimb1, kernel_size=3, stride=1, padding=1, bias=True)
+
         # c2
         self.dc2_conv1 = conv(64 + 16 * fdimb1 + 4 * fdimb2, 128, kernel_size=3, stride=1, padding=1, dilation=1)
         self.dc2_conv2 = conv(128, 128, kernel_size=3, stride=1, padding=2, dilation=2)
@@ -237,6 +239,15 @@ class VCN(nn.Module):
         self.dc2_conv5 = conv(96, 64, kernel_size=3, stride=1, padding=16, dilation=16)
         self.dc2_conv6 = conv(64, 32, kernel_size=3, stride=1, padding=1, dilation=1)
         self.dc2_conv7 = nn.Conv2d(32, 4 * 2 * fdimb1 + 2 * fdimb2, kernel_size=3, stride=1, padding=1, bias=True)
+
+        # c1
+        self.dc1_conv1 = conv(64 + 16 * fdimb1 + 4 * fdimb2 + 2 * fdimb2, 128, kernel_size=3, stride=1, padding=1, dilation=1)
+        self.dc1_conv2 = conv(128, 128, kernel_size=3, stride=1, padding=2, dilation=2)
+        self.dc1_conv3 = conv(128, 128, kernel_size=3, stride=1, padding=4, dilation=4)
+        self.dc1_conv4 = conv(128, 96, kernel_size=3, stride=1, padding=8, dilation=8)
+        self.dc1_conv5 = conv(96, 64, kernel_size=3, stride=1, padding=16, dilation=16)
+        self.dc1_conv6 = conv(64, 32, kernel_size=3, stride=1, padding=1, dilation=1)
+        self.dc1_conv7 = nn.Conv2d(32, 4 * 2 * fdimb1 + 2 * fdimb2, kernel_size=3, stride=1, padding=1, bias=True)
 
         ## Out-of-range detection
         if size[0] > 1:  # only in train mode
@@ -276,6 +287,15 @@ class VCN(nn.Module):
 
             self.dc2_convo = nn.Sequential(
                 conv(64 + 16 * fdimb1 + 4 * fdimb2, 128, kernel_size=3, stride=1, padding=1, dilation=1),
+                conv(128, 128, kernel_size=3, stride=1, padding=2, dilation=2),
+                conv(128, 128, kernel_size=3, stride=1, padding=4, dilation=4),
+                conv(128, 96, kernel_size=3, stride=1, padding=8, dilation=8),
+                conv(96, 64, kernel_size=3, stride=1, padding=16, dilation=16),
+                conv(64, 32, kernel_size=3, stride=1, padding=1, dilation=1),
+                nn.Conv2d(32, 1, kernel_size=3, stride=1, padding=1, bias=True))
+
+            self.dc1_convo = nn.Sequential(
+                conv(64 + 16 * fdimb1 + 4 * fdimb2 + 2 * fdimb2, 128, kernel_size=3, stride=1, padding=1, dilation=1),
                 conv(128, 128, kernel_size=3, stride=1, padding=2, dilation=2),
                 conv(128, 128, kernel_size=3, stride=1, padding=4, dilation=4),
                 conv(128, 96, kernel_size=3, stride=1, padding=8, dilation=8),
@@ -350,7 +370,7 @@ class VCN(nn.Module):
     def forward(self, im, disc_aux=None):
         bs = im.shape[0] // 2
 
-        c06, c05, c04, c03, c02 = self.pspnet(im)
+        c06, c05, c04, c03, c02, c01 = self.pspnet(im)
         c16 = c06[:bs]
         c26 = c06[bs:]
         c15 = c05[:bs]
@@ -361,6 +381,8 @@ class VCN(nn.Module):
         c23 = c03[bs:]
         c12 = c02[:bs]
         c22 = c02[bs:]
+        c11 = c01[:bs]
+        c21 = c01[bs:]
 
         # normalize
         c16n = c16 / (c16.norm(dim=1, keepdim=True) + 1e-9)
@@ -373,6 +395,8 @@ class VCN(nn.Module):
         c23n = c23 / (c23.norm(dim=1, keepdim=True) + 1e-9)
         c12n = c12 / (c12.norm(dim=1, keepdim=True) + 1e-9)
         c22n = c22 / (c22.norm(dim=1, keepdim=True) + 1e-9)
+        c11n = c11 / (c11.norm(dim=1, keepdim=True) + 1e-9)
+        c21n = c21 / (c21.norm(dim=1, keepdim=True) + 1e-9)
 
         # print(c16.shape)
         ## matching 6
@@ -524,6 +548,40 @@ class VCN(nn.Module):
         va = va.view(b, -1, 2, h, w)
         flow2 = (flow2h.view(b, -1, 2, h, w) * F.softmax(va, 1)).sum(1)
 
+        ## matching 1
+        up_flow2 = F.upsample(flow2, [im.size()[2] // 2, im.size()[3] // 2], mode='bilinear') * 2
+        warp1, _ = self.warp2(c21n, up_flow2)
+        feat1 = self.corrf(c11n, warp1, self.md[4])
+        feat1 = self.f2(feat1)
+        cost1 = self.p2(feat1)  # b, 16, u,v,h,w
+
+        # soft WTA
+        b, c, u, v, h, w = cost1.shape
+        cost1 = cost1.view(-1, u, v, h, w)  # bx12, 9,9,h,w, also predict uncertainty from here
+        flow1h, ent1h = self.flow_reg2(cost1)  # bx12, 2, h, w
+        flow1h = flow1h.view(b, c, 2, h, w) + up_flow2[:, np.newaxis]
+        flow1h = flow1h.view(bs, -1, h, w)  # b, 12*2, h, w
+        ent1h = ent1h.view(bs, -1, h, w)  # b, 12*1, h, w
+
+        # append coarse hypotheses
+        flow1h = torch.cat(
+            (flow1h, F.upsample(flow2h.detach() * 2, [flow1h.shape[2], flow1h.shape[3]], mode='bilinear')), 1)
+        ent1h = torch.cat((ent1h, F.upsample(ent2h, [flow1h.shape[2], flow1h.shape[3]], mode='bilinear')), 1)
+
+        if self.training:
+            x = torch.cat((ent1h.detach(), flow1h.detach(), c11), 1)
+            print('COARSE SHAPE', x.shape[1])
+            oor1 = self.dc1_convo(x)[:, 0]
+
+        # hypotheses fusion
+        x = torch.cat((ent1h.detach(), flow1h.detach(), c11), 1)
+        print('FUSION SHAPE', x.shape[1])
+        x = self.dc1_conv4(self.dc1_conv3(self.dc1_conv2(self.dc1_conv1(x))))
+        va = self.dc1_conv7(self.dc1_conv6(self.dc1_conv5(x)))
+        va = va.view(b, -1, 2, h, w)
+        flow1 = (flow1h.view(b, -1, 2, h, w) * F.softmax(va, 1)).sum(1)
+
+        flow1 = F.upsample(flow1, [im.size()[2], im.size()[3]], mode='bilinear')
         flow2 = F.upsample(flow2, [im.size()[2], im.size()[3]], mode='bilinear')
         flow3 = F.upsample(flow3, [im.size()[2], im.size()[3]], mode='bilinear')
         flow4 = F.upsample(flow4, [im.size()[2], im.size()[3]], mode='bilinear')
@@ -533,8 +591,9 @@ class VCN(nn.Module):
         if self.training:
             flowl0 = disc_aux[0].permute(0, 3, 1, 2).clone()
             mask = disc_aux[1].clone()
-            loss = 1.0 * torch.norm((flow2 * 4 - flowl0[:, :2]), 2, 1)[mask].mean() + \
-                   0.5 * torch.norm((flow3 * 8 - flowl0[:, :2]), 2, 1)[mask].mean() + \
+            loss = 1.0 * torch.norm((flow1 * 2 - flowl0[:, :2]), 2, 1)[mask].mean() + \
+                   0.5 * torch.norm((flow2 * 4 - flowl0[:, :2]), 2, 1)[mask].mean() + \
+                   0.25 * torch.norm((flow3 * 8 - flowl0[:, :2]), 2, 1)[mask].mean() + \
                    0.25 * torch.norm((flow4 * 16 - flowl0[:, :2]), 2, 1)[mask].mean() + \
                    0.25 * torch.norm((flow5 * 32 - flowl0[:, :2]), 2, 1)[mask].mean() + \
                    0.25 * torch.norm((flow6 * 64 - flowl0[:, :2]), 2, 1)[mask].mean()
@@ -543,10 +602,12 @@ class VCN(nn.Module):
             im_warp, _ = self.warpx(im[bs:], flowl0[:, :2])
             occ_mask = (im_warp - im[:bs]).norm(dim=1) > 0.3
 
+            up_flow2 = F.upsample(up_flow2, [im.size()[2], im.size()[3]], mode='bilinear') * 2
             up_flow3 = F.upsample(up_flow3, [im.size()[2], im.size()[3]], mode='bilinear') * 4
             up_flow4 = F.upsample(up_flow4, [im.size()[2], im.size()[3]], mode='bilinear') * 8
             up_flow5 = F.upsample(up_flow5, [im.size()[2], im.size()[3]], mode='bilinear') * 16
             up_flow6 = F.upsample(up_flow6, [im.size()[2], im.size()[3]], mode='bilinear') * 32
+            oor1 = F.upsample(oor1[:, np.newaxis], [im.size()[2], im.size()[3]], mode='bilinear')[:, 0]
             oor2 = F.upsample(oor2[:, np.newaxis], [im.size()[2], im.size()[3]], mode='bilinear')[:, 0]
             oor3 = F.upsample(oor3[:, np.newaxis], [im.size()[2], im.size()[3]], mode='bilinear')[:, 0]
             oor4 = F.upsample(oor4[:, np.newaxis], [im.size()[2], im.size()[3]], mode='bilinear')[:, 0]
@@ -557,7 +618,8 @@ class VCN(nn.Module):
             loss += self.get_oor_loss(flowl0[:, :2] - up_flow5, oor4, (16 * self.flow_reg16.flowx.max()), occ_mask)
             loss += self.get_oor_loss(flowl0[:, :2] - up_flow4, oor3, (8 * self.flow_reg8.flowx.max()), occ_mask)
             loss += self.get_oor_loss(flowl0[:, :2] - up_flow3, oor2, (4 * self.flow_reg4.flowx.max()), occ_mask)
+            loss += self.get_oor_loss(flowl0[:, :2] - up_flow2, oor1, (2 * self.flow_reg2.flowx.max()), occ_mask)
 
-            return flow2 * 4, flow3 * 8, flow4 * 16, flow5 * 32, flow6 * 64, loss, oor2
+            return flow1 * 2, flow2 * 4, flow3 * 8, flow4 * 16, flow5 * 32, flow6 * 64, loss, oor1
         else:
-            return flow2 * 4, ent2h.mean(1)[0]
+            return flow1 * 2, ent2h.mean(1)[0]

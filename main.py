@@ -299,12 +299,13 @@ def train(imgL, imgR, flowl0):
     optimizer.step()
 
     vis = {}
-    vis['output2'] = output[0].detach().cpu().numpy()
-    vis['output3'] = output[1].detach().cpu().numpy()
-    vis['output4'] = output[2].detach().cpu().numpy()
-    vis['output5'] = output[3].detach().cpu().numpy()
-    vis['output6'] = output[4].detach().cpu().numpy()
-    vis['oor'] = output[6][0].detach().cpu().numpy()
+    vis['output1'] = output[0].detach().cpu().numpy()
+    vis['output2'] = output[1].detach().cpu().numpy()
+    vis['output3'] = output[2].detach().cpu().numpy()
+    vis['output4'] = output[3].detach().cpu().numpy()
+    vis['output5'] = output[4].detach().cpu().numpy()
+    vis['output6'] = output[5].detach().cpu().numpy()
+    vis['oor'] = output[7][0].detach().cpu().numpy()
     vis['gt'] = flowl0[:, :, :, :].detach().cpu().numpy()
     if mask.sum():
         vis['AEPE'] = realEPE(output[0].detach(), flowl0.permute(0, 3, 1, 2).detach(), mask, sparse=False)
@@ -471,6 +472,8 @@ def main():
                     np.concatenate((gu[:, :, np.newaxis], gv[:, :, np.newaxis], mask[:, :, np.newaxis]), -1))[
                     np.newaxis], total_iters)
                 log.image_summary('train/output2', flow_to_image(vis['output2'][0].transpose((1, 2, 0)))[np.newaxis],
+                                  total_iters)
+                log.image_summary('train/output1', flow_to_image(vis['output1'][0].transpose((1, 2, 0)))[np.newaxis],
                                   total_iters)
                 log.image_summary('train/output3', flow_to_image(vis['output3'][0].transpose((1, 2, 0)))[np.newaxis],
                                   total_iters)

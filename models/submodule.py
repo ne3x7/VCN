@@ -301,7 +301,7 @@ class pspnet_s(nn.Module):
             self.proj5 = conv2DBatchNormRelu(in_channels=128, k_size=1, n_filters=128 // groups, padding=0, stride=1)
             self.proj4 = conv2DBatchNormRelu(in_channels=128, k_size=1, n_filters=128 // groups, padding=0, stride=1)
             self.proj3 = conv2DBatchNormRelu(in_channels=64, k_size=1, n_filters=64 // groups, padding=0, stride=1)
-            # self.proj2 = conv2DBatchNormRelu(in_channels=64, k_size=1,n_filters=64//groups, padding=0,stride=1)
+            self.proj2 = conv2DBatchNormRelu(in_channels=64, k_size=1,n_filters=64//groups, padding=0,stride=1)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -351,18 +351,16 @@ class pspnet_s(nn.Module):
         concat3 = torch.cat((rconv3, self.upconv4[1](conv4x)), dim=1)
         conv3 = self.iconv3(concat3)
 
-        # conv3x = F.upsample(conv3, [pool1.size()[2],pool1.size()[3]],mode='bilinear')
-        # concat2 = torch.cat((pool1,self.upconv3[1](conv3x)),dim=1)
-        # conv2 = self.iconv2(concat2)
+        conv3x = F.upsample(conv3, [pool1.size()[2],pool1.size()[3]],mode='bilinear')
+        concat2 = torch.cat((pool1,self.upconv3[1](conv3x)),dim=1)
+        conv2 = self.iconv2(concat2)
 
         if self.is_proj:
             proj6 = self.proj6(conv6)
             proj5 = self.proj5(conv5)
             proj4 = self.proj4(conv4)
             proj3 = self.proj3(conv3)
-            #    proj2 = self.proj2(conv2)
-            #    return proj6,proj5,proj4,proj3,proj2
-            return proj6, proj5, proj4, proj3
+            proj2 = self.proj2(conv2)
+            return proj6,proj5,proj4,proj3,proj2
         else:
-            #    return conv6, conv5, conv4, conv3, conv2
-            return conv6, conv5, conv4, conv3
+            return conv6, conv5, conv4, conv3, conv2
