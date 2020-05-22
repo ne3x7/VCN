@@ -368,9 +368,11 @@ class VCN(nn.Module):
 
     # @profile
     def forward(self, im, disc_aux=None):
+        print('IMAGE SHAPE', im.shape)
         bs = im.shape[0] // 2
 
         c06, c05, c04, c03, c02, c01 = self.pspnet(im)
+        print('FEATURES SHAPE', c06.shape)
         c16 = c06[:bs]
         c26 = c06[bs:]
         c15 = c05[:bs]
