@@ -70,6 +70,7 @@ torch.cuda.manual_seed(1)
 ## set hyperparameters for training
 ngpus = args.ngpus
 batch_size = 4 * ngpus
+print('BATCH SIZE', batch_size)
 if args.stage in ['chairs', 'things']:
     lr_schedule = 'slong_ours'
 else:
