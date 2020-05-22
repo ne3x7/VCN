@@ -143,6 +143,7 @@ class VCN(nn.Module):
 
     def __init__(self, size, md=[4, 4, 4, 4, 4], fac=1.):
         super(VCN, self).__init__()
+        print('MODEL SIZE', size)
         self.md = md
         self.fac = fac
         use_entropy = True
