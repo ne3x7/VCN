@@ -152,7 +152,6 @@ class pspnet(nn.Module):
         self.convbnrelu1_3 = conv2DBatchNormRelu(in_channels=16, k_size=3, n_filters=32,
                                                  padding=1, stride=1)
         # Vanilla Residual Blocks
-        self.res_block2 = self._make_layer(residualBlock, 64, 1, stride=2)
         self.res_block3 = self._make_layer(residualBlock, 64, 1, stride=2)
         self.res_block5 = self._make_layer(residualBlock, 128, 1, stride=2)
         self.res_block6 = self._make_layer(residualBlock, 128, 1, stride=2)
@@ -224,8 +223,7 @@ class pspnet(nn.Module):
         pool1 = F.max_pool2d(conv1, 3, 2, 1)  # 32, h/2, w/2 -> 32, h/4, w/4
 
         # H/4, W/4 -> H/16, W/16
-        conv2 = self.res_block2(pool1)
-        conv3 = self.res_block3(conv2)
+        conv3 = self.res_block3(pool1)
         conv4 = self.res_block5(conv3)
         conv5 = self.res_block6(conv4)
         conv6 = self.res_block7(conv5)
@@ -247,7 +245,7 @@ class pspnet(nn.Module):
         concat2 = torch.cat((pool1, self.upconv3[1](conv3x)), dim=1)
         conv2 = self.iconv2(concat2)
 
-        conv2x = F.upsample(conv2, [conv1.size()[2], conv1.size()[3]], mode='bilinear')
+        conv2x = F.upsample(pool1, [conv1.size()[2], conv1.size()[3]], mode='bilinear')
         concat1 = torch.cat((conv1, self.upconv2[1](conv2x)), dim=1)
         conv1 = self.iconv1(concat1)
 
