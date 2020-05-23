@@ -243,7 +243,7 @@ class VCN(nn.Module):
         self.dc2_conv7 = nn.Conv2d(32, 4 * 2 * fdimb1 + 2 * fdimb2, kernel_size=3, stride=1, padding=1, bias=True)
 
         # c1
-        self.dc1_conv1 = conv(64 + 16 * fdimb1 + 4 * fdimb2 + 2 * fdimb2, 128, kernel_size=3, stride=1, padding=1, dilation=1)
+        self.dc1_conv1 = conv(64 + 16 * fdimb1 + 8 * fdimb2, 128, kernel_size=3, stride=1, padding=1, dilation=1)
         self.dc1_conv2 = conv(128, 128, kernel_size=3, stride=1, padding=2, dilation=2)
         self.dc1_conv3 = conv(128, 128, kernel_size=3, stride=1, padding=4, dilation=4)
         self.dc1_conv4 = conv(128, 96, kernel_size=3, stride=1, padding=8, dilation=8)
