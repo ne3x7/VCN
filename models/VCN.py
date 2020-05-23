@@ -249,7 +249,7 @@ class VCN(nn.Module):
         self.dc1_conv4 = conv(128, 96, kernel_size=3, stride=1, padding=8, dilation=8)
         self.dc1_conv5 = conv(96, 64, kernel_size=3, stride=1, padding=16, dilation=16)
         self.dc1_conv6 = conv(64, 32, kernel_size=3, stride=1, padding=1, dilation=1)
-        self.dc1_conv7 = nn.Conv2d(32, 4 * 2 * fdimb1 + 2 * fdimb2, kernel_size=3, stride=1, padding=1, bias=True)
+        self.dc1_conv7 = nn.Conv2d(32, 4 * 2 * fdimb1 + 4 * fdimb2, kernel_size=3, stride=1, padding=1, bias=True)
 
         ## Out-of-range detection
         if size[0] > 1:  # only in train mode
@@ -570,7 +570,7 @@ class VCN(nn.Module):
         ent1h = ent1h.view(bs, -1, h, w)  # b, 12*1, h, w
 
         # append coarse hypotheses
-        flow1h = torch.cat(
+        flow1h = torch.cat(  # 24 +
             (flow1h, F.upsample(flow2h.detach() * 2, [flow1h.shape[2], flow1h.shape[3]], mode='bilinear')), 1)
         ent1h = torch.cat((ent1h, F.upsample(ent2h, [flow1h.shape[2], flow1h.shape[3]], mode='bilinear')), 1)
 
@@ -583,8 +583,8 @@ class VCN(nn.Module):
         x = torch.cat((ent1h.detach(), flow1h.detach(), c11), 1)
         print('FUSION SHAPE', x.shape[1])
         x = self.dc1_conv4(self.dc1_conv3(self.dc1_conv2(self.dc1_conv1(x))))
-        va = self.dc1_conv7(self.dc1_conv6(self.dc1_conv5(x)))
-        va = va.view(b, -1, 2, h, w)
+        va = self.dc1_conv7(self.dc1_conv6(self.dc1_conv5(x)))  # 152
+        va = va.view(b, -1, 2, h, w)  ## 76
         flow1 = (flow1h.view(b, -1, 2, h, w) * F.softmax(va, 1)).sum(1)
 
         flow1 = F.upsample(flow1, [im.size()[2], im.size()[3]], mode='bilinear')
