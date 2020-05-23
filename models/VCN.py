@@ -297,7 +297,7 @@ class VCN(nn.Module):
                 nn.Conv2d(32, 1, kernel_size=3, stride=1, padding=1, bias=True))
 
             self.dc1_convo = nn.Sequential(
-                conv(64 + 16 * fdimb1 + 4 * fdimb2 + 2 * fdimb2, 128, kernel_size=3, stride=1, padding=1, dilation=1),
+                conv(64 + 16 * fdimb1 + 4 * fdimb2 + 8 * fdimb2, 128, kernel_size=3, stride=1, padding=1, dilation=1),
                 conv(128, 128, kernel_size=3, stride=1, padding=2, dilation=2),
                 conv(128, 128, kernel_size=3, stride=1, padding=4, dilation=4),
                 conv(128, 96, kernel_size=3, stride=1, padding=8, dilation=8),
