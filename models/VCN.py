@@ -143,7 +143,7 @@ class VCN(nn.Module):
 
     def __init__(self, size, md=[4, 4, 4, 4, 4], fac=1.):
         super(VCN, self).__init__()
-        print('MODEL SIZE', size)
+        # print('MODEL SIZE', size)
         self.md = md
         self.fac = fac
         use_entropy = True
@@ -370,11 +370,11 @@ class VCN(nn.Module):
 
     # @profile
     def forward(self, im, disc_aux=None):
-        print('IMAGE SHAPE', im.shape)
+        # print('IMAGE SHAPE', im.shape)
         bs = im.shape[0] // 2
 
         c06, c05, c04, c03, c02, c01 = self.pspnet(im)
-        print('FEATURES SHAPE', c06.shape)
+        # print('FEATURES SHAPE', c06.shape)
         c16 = c06[:bs]
         c26 = c06[bs:]
         c15 = c05[:bs]
@@ -404,15 +404,15 @@ class VCN(nn.Module):
 
         # print(c16.shape)
         ## matching 6
-        print(c16n.shape)
+        # print(c16n.shape)
         feat6 = self.corrf(c16n, c26n, self.md[0], fac=self.fac)
-        print(feat6.shape)
+        # print(feat6.shape)
         feat6 = self.f6(feat6)
         cost6 = self.p6(feat6)  # b, 16, u,v,h,w
 
         # soft WTA
         b, c, u, v, h, w = cost6.shape
-        print('6 COARSE SHAPE', cost6.shape)
+        # print('6 COARSE SHAPE', cost6.shape)
         cost6 = cost6.view(-1, u, v, h, w)  # bx16, 9,9,h,w, also predict uncertainty from here
         flow6h, ent6h = self.flow_reg64(cost6)  # bx16, 2, h, w
         flow6h = flow6h.view(bs, -1, h, w)  # b, 16*2, h, w
@@ -576,12 +576,12 @@ class VCN(nn.Module):
 
         if self.training:
             x = torch.cat((ent1h.detach(), flow1h.detach(), c11), 1)
-            print('COARSE SHAPE', x.shape[1])
+            # print('COARSE SHAPE', x.shape[1])
             oor1 = self.dc1_convo(x)[:, 0]
 
         # hypotheses fusion
         x = torch.cat((ent1h.detach(), flow1h.detach(), c11), 1)
-        print('FUSION SHAPE', x.shape[1])
+        # print('FUSION SHAPE', x.shape[1])
         x = self.dc1_conv4(self.dc1_conv3(self.dc1_conv2(self.dc1_conv1(x))))
         va = self.dc1_conv7(self.dc1_conv6(self.dc1_conv5(x)))  # 152
         va = va.view(b, -1, 2, h, w)  ## 76

@@ -70,7 +70,7 @@ torch.cuda.manual_seed(1)
 ## set hyperparameters for training
 ngpus = args.ngpus
 batch_size = 4 * ngpus
-print('BATCH SIZE', batch_size)
+# print('BATCH SIZE', batch_size)
 if args.stage in ['chairs', 'things']:
     lr_schedule = 'slong_ours'
 else:
@@ -282,7 +282,7 @@ def train(imgL, imgR, flowl0):
     flowl0 = Variable(torch.FloatTensor(flowl0))
 
     imgL, imgR, flowl0 = imgL.cuda(), imgR.cuda(), flowl0.cuda()
-    print('DATALOADER OUT SHAPE', imgL.shape)
+    # print('DATALOADER OUT SHAPE', imgL.shape)
     mask = (flowl0[:, :, :, 2] == 1) & (flowl0[:, :, :, 0].abs() < args.maxdisp) & (
             flowl0[:, :, :, 1].abs() < (args.maxdisp // args.fac))
     mask.detach_()
