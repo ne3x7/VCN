@@ -191,6 +191,7 @@ class VCN(nn.Module):
         self.warp4 = WarpModule([size[0], size[1] // 16, size[2] // 16])
         self.warp3 = WarpModule([size[0], size[1] // 8, size[2] // 8])
         self.warp2 = WarpModule([size[0], size[1] // 4, size[2] // 4])
+        self.warp1 = WarpModule([size[0], size[1] // 2, size[2] // 2])
         if self.training:
             self.warpx = WarpModule([size[0], size[1], size[2]])
 
