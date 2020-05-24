@@ -231,9 +231,10 @@ def main():
         pred_disp[:,:,1] *= input_size[0] / max_h
         flow = np.ones([pred_disp.shape[0],pred_disp.shape[1],3])
         flow[:,:,:2] = pred_disp
-        rmse = np.sqrt((np.linalg.norm(flow - flo, ord=2, axis=-1) ** 2).mean())
+        rmse = np.sqrt((np.linalg.norm(flow[:,:,:2] - flo[:,:,:2], ord=2, axis=-1) ** 2).mean())
         rmses += rmse
-        nrmses += rmse / np.sqrt((np.linalg.norm(flo, ord=2, axis=-1) ** 2).mean())
+        nrmses += rmse / np.sqrt((np.linalg.norm(flo[:,:,:2], ord=2, axis=-1) ** 2).mean())
+        error = np.linalg.norm(flow[:,:,:2] - flo[:,:,:2], ord=2, axis=-1) ** 2
         entropy = torch.squeeze(entropy).data.cpu().numpy()
         entropy = cv2.resize(entropy, (input_size[1], input_size[0]))
 
@@ -256,12 +257,13 @@ def main():
                 f.write(str(ttime))
         elif args.dataset == 'k15stereo' or args.dataset == 'k12stereo':
             skimage.io.imsave('%s/%s/%s.png'% (args.outdir, args.dataset,idxname.split('.')[0]),(-flow[:,:,0].astype(np.float32)*256).astype('uint16'))
-        # else:
+        else:
             # write_flow('%s/%s/%s.png'% (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), flow.copy())
-            # cv2.imwrite('%s/%s/%s.png' % (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), flow_to_image(flow)[:, :, ::-1])
-            # cv2.imwrite('%s/%s/%s-gt.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]), flow_to_image(flo)[:, :, ::-1])
-            # arrow_pic(flo, '%s/%s/%s-vec-gt.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]))
-            # arrow_pic(flow, '%s/%s/%s-vec.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]))
+            cv2.imwrite('%s/%s/%s.png' % (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), flow_to_image(flow)[:, :, ::-1])
+            cv2.imwrite('%s/%s/%s-gt.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]), flow_to_image(flo)[:, :, ::-1])
+            arrow_pic(flo, '%s/%s/%s-vec-gt.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]))
+            arrow_pic(flow, '%s/%s/%s-vec.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]))
+            cv2.imwrite('%s/%s/%s-err.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]), error)
         # cv2.imwrite('%s/%s/ent-%s.png'% (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), entropy*200)
             
         torch.cuda.empty_cache()
