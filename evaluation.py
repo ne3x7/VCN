@@ -37,6 +37,8 @@ parser.add_argument('--flow', default=None,
                     help='model path')
 parser.add_argument('--model', default='VCN',
                     help='VCN or VCN_small')
+parser.add_argument('--loadmodel', default=None,
+                    help='VCN or VCN_small')
 parser.add_argument('--testres', type=float, default=1,
                     help='resolution, {1: original resolution, 2: 2X resolution}')
 parser.add_argument('--maxdisp', type=int ,default=64,
