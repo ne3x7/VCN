@@ -98,7 +98,6 @@ def arrow_pic(field, fname):
     ax.axis('off')
     fig.savefig(fname)
 
-mkdir_p('%s/%s/'% (args.outdir, args.dataset))
 def main():
     model.eval()
     ttime_all = []
@@ -158,19 +157,13 @@ def main():
     entropy = torch.squeeze(entropy).data.cpu().numpy()
     entropy = cv2.resize(entropy, (input_size[1], input_size[0]))
 
-    # save predictions
-    if args.dataset == 'mbstereo':
-        dirname = '%s/%s/%s'%(args.outdir, args.dataset, args.left.split('/')[-2])
-        mkdir_p(dirname)
-        idxname = ('%s/%s')%(dirname.rsplit('/',1)[-1],args.left.split('/')[-1])
-    else:
-        idxname = args.left.split('/')[-1]
+    idxname = args.left.split('/')[-1]
 
-    cv2.imwrite('%s/%s/%s.png' % (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), flow_to_image(flow)[:, :, ::-1])
-    cv2.imwrite('%s/%s/%s-gt.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]), flow_to_image(flo)[:, :, ::-1])
-    arrow_pic(flo, '%s/%s/%s-vec-gt.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]))
-    arrow_pic(flow, '%s/%s/%s-vec.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]))
-    cv2.imwrite('%s/%s/%s-err.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]), error)
+    cv2.imwrite('%s.png' % idxname.rsplit('.',1)[0], flow_to_image(flow)[:, :, ::-1])
+    cv2.imwrite('%s-gt.png' % idxname.rsplit('.', 1)[0], flow_to_image(flo)[:, :, ::-1])
+    arrow_pic(flo, '%s-vec-gt.png' % idxname.rsplit('.', 1)[0])
+    arrow_pic(flow, '%s-vec.png' % idxname.rsplit('.', 1)[0])
+    cv2.imwrite('%s-err.png' % idxname.rsplit('.', 1)[0], error)
 
     torch.cuda.empty_cache()
     print(ttime_all, rmses, nrmses)
