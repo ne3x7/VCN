@@ -235,7 +235,7 @@ def main():
         rmses += rmse
         nrmses += rmse / np.sqrt((np.linalg.norm(flo[:,:,:2], ord=2, axis=-1) ** 2).mean())
         error = np.linalg.norm(flow[:,:,:2] - flo[:,:,:2], ord=2, axis=-1) ** 2
-        error = 255 * error / error.max()
+        error = 255 - 255 * error / error.max()
         entropy = torch.squeeze(entropy).data.cpu().numpy()
         entropy = cv2.resize(entropy, (input_size[1], input_size[0]))
 
