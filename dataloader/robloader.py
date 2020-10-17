@@ -75,7 +75,8 @@ class myImageFloder(data.Dataset):
                 1,
                 self.shape,
                 10. ** (2 * np.random.rand()),
-                incompressible=False)
+                incompressible=False
+            )
             iml0, iml1 = image_from_flow(
                 ppp=np.random.uniform(0.008, 0.1),
                 pip=np.random.uniform(0.95, 1.0),
@@ -165,6 +166,8 @@ class myImageFloder(data.Dataset):
 
         iml0 = torch.Tensor(np.transpose(iml0, (2, 0, 1)))
         iml1 = torch.Tensor(np.transpose(iml1, (2, 0, 1)))
+
+        assert flowl0.shape[-1] == 2, "flowl0.shape"
 
         return iml0, iml1, flowl0
 
