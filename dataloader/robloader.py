@@ -13,6 +13,7 @@ import pdb
 import cv2
 from utils.flowlib import read_flow
 from utils.util_flow import readPFM
+from utils.util_flow import random_incompressible_flow, image_from_flow
 
 
 def default_loader(path):
@@ -55,18 +56,31 @@ class myImageFloder(data.Dataset):
         self.black = black
 
     def __getitem__(self, index):
-        iml0 = self.iml0[index]
-        iml1 = self.iml1[index]
-        flowl0 = self.flowl0[index]
         th, tw = self.shape
 
-        iml0 = self.loader(iml0)
-        iml1 = self.loader(iml1)
-        iml1 = np.asarray(iml1) / 255.
-        iml0 = np.asarray(iml0) / 255.
-        iml0 = iml0[:, :, None].copy()  # iml0[:,:,::-1].copy()
-        iml1 = iml1[:, :, None].copy()  # iml1[:,:,::-1].copy()
-        flowl0 = self.dploader(flowl0)
+        if np.random.rand() > 0.3:
+            iml0 = self.iml0[index]
+            iml1 = self.iml1[index]
+            flowl0 = self.flowl0[index]
+
+            iml0 = self.loader(iml0)
+            iml1 = self.loader(iml1)
+            iml1 = np.asarray(iml1) / 255.
+            iml0 = np.asarray(iml0) / 255.
+            iml0 = iml0[:, :, None].copy()  # iml0[:,:,::-1].copy()
+            iml1 = iml1[:, :, None].copy()  # iml1[:,:,::-1].copy()
+            flowl0 = self.dploader(flowl0)
+        else:
+            flowl0 = random_incompressible_flow(1, self.shape, 100, incompressible=False)
+            iml0, iml1 = image_from_flow(
+                ppp=0.01, pip=1.0, flow=flowl0,
+                intensity_bounds=(0.8, 1),
+                diameter_bounds=(0.35, 6)
+            )
+            iml0 = iml0.transpose(1, 2, 0).copy()
+            iml1 = iml1.transpose(1, 2, 0).copy()
+            flowl0 = flowl0[0]
+
         flowl0 = np.ascontiguousarray(flowl0, dtype=np.float32)
         flowl0[np.isnan(flowl0)] = 1e6  # set to max
 

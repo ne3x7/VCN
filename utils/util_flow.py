@@ -510,4 +510,6 @@ def faster_images_from_particles(
                 new_image = I / D * (M1 - M2) * (M3 - M4) / 4
                 image[i, ids_x_0[j]:ids_x_1[j], ids_y_0[j]:ids_y_1[j]] += new_image
 
+        return image
+
     return transform_image(image, coords, intens, diams)
