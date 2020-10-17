@@ -87,7 +87,10 @@ class myImageFloder(data.Dataset):
             iml0 = iml0.transpose(1, 2, 0).copy()
             iml1 = iml1.transpose(1, 2, 0).copy()
             flowl0 = flowl0[0]
-            flowl0[:, :, 2] = 1
+            np.concatenate([
+                flowl0,
+                np.ones(flowl0.shape[:-1], dtype=flowl0.dtype)
+            ], axis=-1)
 
         flowl0 = np.ascontiguousarray(flowl0, dtype=np.float32)
         flowl0[np.isnan(flowl0)] = 1e6  # set to max
