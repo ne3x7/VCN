@@ -171,8 +171,6 @@ class myImageFloder(data.Dataset):
         iml0 = torch.Tensor(np.transpose(iml0, (2, 0, 1)))
         iml1 = torch.Tensor(np.transpose(iml1, (2, 0, 1)))
 
-        assert flowl0.shape[-1] == 3,
-
         return iml0, iml1, flowl0
 
     def __len__(self):
