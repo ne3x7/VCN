@@ -8,6 +8,7 @@ import pdb
 from phi.flow import *
 from typing import Tuple, List, Optional
 from scipy.interpolate import SmoothBivariateSpline, RectBivariateSpline
+from scipy.special import erf
 
 from io import *
 
@@ -359,47 +360,38 @@ def particles_from_flow(
     num_particles = int(np.prod(res) * ppp)
     num_particles_image = int(np.prod(res) * ppp / (pip ** 2))
 
-    batch_coords1 = []
-    batch_coords2 = []
-    batch_intens = []
-    batch_diams = []
-    for i in range(batch_size):
-        coords = np.stack(
-            [
-                np.random.uniform(1, x, num_particles),
-                np.random.uniform(1, y, num_particles),
-            ],
-            axis=-1,
-        )
+    coords = np.stack(
+        [
+            np.random.uniform(1, x, (batch_size, num_particles)),
+            np.random.uniform(1, y, (batch_size, num_particles)),
+        ],
+        axis=-1,
+    )
 
-        a, b = intensity_bounds
-        intens = np.random.uniform(a, b, num_particles)
-        a, b = diameter_bounds
-        diams = np.random.uniform(a, b, num_particles)
+    intens = np.random.uniform(*intensity_bounds, (batch_size, num_particles))
+    diams = np.random.uniform(*diameter_bounds, (batch_size, num_particles))
 
-        vec = flow_from_coordinates(x_mesh, y_mesh, coords, flow[i], vmax=vmax)
-        coords1 = coords - 0.5 * vec
-        coords2 = coords + 0.5 * vec
+    vecs = np.stack([
+        flow_from_coordinates(x_mesh, y_mesh, c, f, vmax=vmax) for c, f in zip(coords, flow)
+    ], axis=0)
 
-        batch_coords1.append(coords1[:num_particles_image])
-        batch_coords2.append(coords2[-num_particles_image:])
-        batch_intens.append(intens)
-        batch_diams.append(diams)
-
-    coords1 = np.stack(batch_coords1, axis=0)
-    coords2 = np.stack(batch_coords2, axis=0)
-    intens = np.stack(batch_intens, axis=0)
-    diams = np.stack(batch_diams, axis=0)
+    coords1 = coords - 0.5 * vecs
+    coords2 = coords + 0.5 * vecs
 
     return coords1, coords2, intens, diams
 
 
-def image_from_flow(ppp, pip, flow, **options):
+def image_from_flow(
+    ppp: float,
+    pip: float,
+    flow: np.ndarray,
+    **options
+):
     """Generates images from flow.
 
-    :param ppp:
-    :param pip:
-    :param flow:
+    :param ppp: density, particles per pixes
+    :param pip: loss, particles in plane percent
+    :param flow: shape (batch_size, sy, sx, 2)
     :param options:
     :return:
     """
@@ -408,17 +400,23 @@ def image_from_flow(ppp, pip, flow, **options):
 
     coords1, coords2, intens, diams = particles_from_flow(ppp, pip, x_mesh, y_mesh, flow, **options)
 
-    images1 = images_from_particles(res, meshgrid, coords1, intens, diams)
-    images2 = images_from_particles(res, meshgrid, coords2, intens, diams)
+    images1 = faster_images_from_particles(res, meshgrid, coords1, intens, diams)
+    images2 = faster_images_from_particles(res, meshgrid, coords2, intens, diams)
 
     return images1, images2
 
 
-def images_from_particles(res, meshgrid, coords, intens, diams):
+def images_from_particles(
+    res: List[int],
+    meshgrid: Tuple[np.ndarray, np.ndarray],
+    coords: np.ndarray,
+    intens: np.ndarray,
+    diams: np.ndarray
+):
     """Generates images assuming particles are Gaussians.
 
-    :param res:
-    :param meshgrid:
+    :param res: resolution
+    :param meshgrid: coordinates in flow
     :param coords: particle coordinates (batch_size, n_particles, 2)
     :param intens: particle intensities (batch_size, n_particles)
     :param diams: particle diameters (batch_size, n_particles)
@@ -428,16 +426,82 @@ def images_from_particles(res, meshgrid, coords, intens, diams):
     image = np.zeros([bs] + list(res), dtype=np.float32)
 
     xg, yg = meshgrid
-    xg = np.repeat(np.expand_dims(xg, 0), bs, 0)
-    yg = np.repeat(np.expand_dims(yg, 0), bs, 0)
 
-    for (x, y), diam, inten in zip(
-            coords.transpose(1, 2, 0), intens.T, diams.T
-    ):
-        x = np.reshape(x, x.shape + (1, 1))
-        y = np.reshape(y, y.shape + (1, 1))
-        diam = np.reshape(diam, diam.shape + (1, 1))
-        inten = np.reshape(inten, inten.shape + (1, 1))
-        image += inten * np.exp(- 8 * ((xg - x) ** 2 + (yg - y) ** 2) / (diam ** 2))
+    # @nb.jit(nopython=True)
+    def transform_image(
+        image,
+        coords,
+        intens,
+        diams):
+        for i in range(coords.shape[0]):
+            x = coords[i, 0]
+            y = coords[i, 1]
+            diam = diams[i]
+            inten = intens[i]
+            for batch_index in range(bs):
+                new_image = inten[batch_index] * np.exp(- 8 * ((xg - x[batch_index]) ** 2 +
+                                                               (yg - y[batch_index]) ** 2) /
+                                                        (diam[batch_index] ** 2))
+                image[batch_index] += new_image
+        return image
+
+    image = transform_image(image, coords.transpose(1, 2, 0), intens.T, diams.T)
 
     return image
+
+
+def faster_images_from_particles(
+    res: List[int],
+    meshgrid: Tuple[np.ndarray, np.ndarray],
+    coords: np.ndarray,
+    intens: np.ndarray,
+    diams: np.ndarray,
+) -> np.ndarray:
+    """Generates images assuming particles are Gaussians.
+
+    :param res:
+    :param meshgrid:
+    :param coords: particle coordinates (batch_size, n_particles, 2)
+    :param intens: particle intensities (batch_size, n_particles)
+    :param diams: particle diameters (batch_size, n_particles)
+    :return: images (batch_size, res)
+    """
+    bs, nps, _ = coords.shape
+    image = np.zeros([bs] + list(res), dtype=np.float32)
+
+    xg, yg = meshgrid
+
+    # @nb.njit()
+    def transform_image(image, coords, intens, diams):
+        for i in range(bs):
+            ids_x_0 = np.maximum(coords[i, :, 0] - diams[i], 0).astype(np.int32)
+            ids_x_1 = np.minimum(coords[i, :, 0] + diams[i], res[0]).astype(np.int32)
+            ids_y_0 = np.maximum(coords[i, :, 1] - diams[i], 0).astype(np.int32)
+            ids_y_1 = np.minimum(coords[i, :, 1] + diams[i], res[1]).astype(np.int32)
+
+            for j in range(nps):
+                x = coords[i, j, 0]
+                y = coords[i, j, 1]
+                d = diams[i, j]
+                I = intens[i, j]
+                # D = vec_erf(2.8284 * 0.5 / d)
+                D = erf(2.8284 * 0.5 / d)
+                x_st = ids_x_0[j]
+                x_fn = ids_x_1[j]
+                y_st = ids_y_0[j]
+                y_fn = ids_y_1[j]
+
+                #                 M1 = vec_erf(2.8284 * ((xg[x_st:x_fn, y_st:y_fn] - x) + 0.5) / d)
+                #                 M2 = vec_erf(2.8284 * ((xg[x_st:x_fn, y_st:y_fn] - x) - 0.5) / d)
+                #                 M3 = vec_erf(2.8284 * ((yg[x_st:x_fn, y_st:y_fn] - y) + 0.5) / d)
+                #                 M4 = vec_erf(2.8284 * ((yg[x_st:x_fn, y_st:y_fn] - y) - 0.5) / d)
+
+                M1 = erf(2.8284 * ((xg[x_st:x_fn, y_st:y_fn] - x) + 0.5) / d)
+                M2 = erf(2.8284 * ((xg[x_st:x_fn, y_st:y_fn] - x) - 0.5) / d)
+                M3 = erf(2.8284 * ((yg[x_st:x_fn, y_st:y_fn] - y) + 0.5) / d)
+                M4 = erf(2.8284 * ((yg[x_st:x_fn, y_st:y_fn] - y) - 0.5) / d)
+
+                new_image = I / D * (M1 - M2) * (M3 - M4) / 4
+                image[i, ids_x_0[j]:ids_x_1[j], ids_y_0[j]:ids_y_1[j]] += new_image
+
+    return transform_image(image, coords, intens, diams)
