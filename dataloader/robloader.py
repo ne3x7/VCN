@@ -89,7 +89,7 @@ class myImageFloder(data.Dataset):
             flowl0 = flowl0[0]
             np.concatenate([
                 flowl0,
-                np.ones(flowl0.shape[:-1], dtype=flowl0.dtype)
+                np.ones(flowl0.shape[:-1] + (1,), dtype=flowl0.dtype)
             ], axis=-1)
 
         flowl0 = np.ascontiguousarray(flowl0, dtype=np.float32)
