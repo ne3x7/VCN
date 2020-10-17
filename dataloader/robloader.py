@@ -56,14 +56,12 @@ class myImageFloder(data.Dataset):
         self.black = black
 
     def __getitem__(self, index):
-        fname = "from synth"
         th, tw = self.shape
 
         if np.random.rand() > 0.3:
             iml0 = self.iml0[index]
             iml1 = self.iml1[index]
             flowl0 = self.flowl0[index]
-            fname = flowl0
 
             iml0 = self.loader(iml0)
             iml1 = self.loader(iml1)
@@ -89,7 +87,7 @@ class myImageFloder(data.Dataset):
             iml0 = iml0.transpose(1, 2, 0).copy()
             iml1 = iml1.transpose(1, 2, 0).copy()
             flowl0 = flowl0[0]
-            np.concatenate([
+            flowl0 = np.concatenate([
                 flowl0,
                 np.ones(flowl0.shape[:-1] + (1,), dtype=flowl0.dtype)
             ], axis=-1)
@@ -173,7 +171,7 @@ class myImageFloder(data.Dataset):
         iml0 = torch.Tensor(np.transpose(iml0, (2, 0, 1)))
         iml1 = torch.Tensor(np.transpose(iml1, (2, 0, 1)))
 
-        assert flowl0.shape[-1] == 3, fname
+        assert flowl0.shape[-1] == 3,
 
         return iml0, iml1, flowl0
 
