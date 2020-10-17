@@ -378,6 +378,9 @@ def particles_from_flow(
     coords1 = coords - 0.5 * vecs
     coords2 = coords + 0.5 * vecs
 
+    coords1 = coords1[:, :num_particles_image]
+    coords2 = coords2[:, -num_particles_image:]
+
     return coords1, coords2, intens, diams
 
 

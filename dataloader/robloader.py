@@ -71,9 +71,15 @@ class myImageFloder(data.Dataset):
             iml1 = iml1[:, :, None].copy()  # iml1[:,:,::-1].copy()
             flowl0 = self.dploader(flowl0)
         else:
-            flowl0 = random_incompressible_flow(1, self.shape, 100, incompressible=False)
+            flowl0 = random_incompressible_flow(
+                1,
+                self.shape,
+                10. ** (2 * np.random.rand()),
+                incompressible=False)
             iml0, iml1 = image_from_flow(
-                ppp=0.01, pip=1.0, flow=flowl0,
+                ppp=np.random.uniform(0.008, 0.1),
+                pip=np.random.uniform(0.95, 1.0),
+                flow=flowl0,
                 intensity_bounds=(0.8, 1),
                 diameter_bounds=(0.35, 6)
             )
@@ -92,19 +98,22 @@ class myImageFloder(data.Dataset):
                 iter_counts = int(f.readline())
         except:
             iter_counts = 0
-        # schedule = [0.5, 1., 25000.]  # initial coeff, final_coeff, half life
-        schedule_coeff = 0  # schedule[0] + (schedule[1] - schedule[0]) * \
+        # schedule = [0., 1., 50000., 50000]  # initial coeff, final_coeff, half life, start
+        schedule_coeff = 1.  # schedule[0] + (schedule[1] - schedule[0]) * \
         # (2 / (1 + np.exp(-1.0986 * iter_counts / schedule[2])) - 1)
 
-        schedule_aug = [1., 0., 50000.]  # initial coeff, final_coeff, half life
-        # schedule_aug_coeff = schedule_aug[0] + (schedule_aug[1] - schedule_aug[0]) * \
-        #                      (2 / (1 + np.exp(-1.0986 * iter_counts / schedule_aug[2])) - 1)
+        schedule_aug = [1., 0., 50000., 50000]  # initial coeff, final_coeff, half life, start
+        if iter_counts > schedule_aug[3]:
+            schedule_aug_coeff = schedule_aug[0] + (schedule_aug[1] - schedule_aug[0]) * \
+                                 (2 / (1 + np.exp(-1.0986 * iter_counts / schedule_aug[2])) - 1)
+        else:
+            schedule_aug_coeff = 0.
         # linear decay
-        schedule_aug_coeff = schedule_aug[0] + (schedule_aug[1] - schedule_aug[0]) \
-                             * max(1., iter_counts / (2 * schedule_aug[2]))
+        # schedule_aug_coeff = schedule_aug[0] + (schedule_aug[1] - schedule_aug[0]) \
+        #                      * max(1., iter_counts / (2 * schedule_aug[2]))
 
         if np.random.binomial(1, self.prob):
-            scl = 0.2 * schedule_aug_coeff
+            scl = 0.  # 0.2 * schedule_aug_coeff
             if scl > 0:
                 scl = [0.2 * schedule_aug_coeff, 0., 0.2 * schedule_aug_coeff]
             else:
