@@ -276,7 +276,7 @@ def load_calib_cam_to_cam(cam_to_cam_file):
 
 def random_incompressible_flow(
     batch_size: int,
-    size: List[int, int],
+    size: List[int],
     power: int,
     incompressible: bool = True
 ) -> np.ndarray:
@@ -314,10 +314,10 @@ def flow_from_coordinates(
     :param flow: shape (sy, sx, 2)
     :return: flow at coordinates, shape (n_particles, 2)
     """
-    u = SmoothBivariateSpline(x=x_mesh.flatten(), y=y_mesh.flatten(), z=flow[:, 0].flatten())
+    u = SmoothBivariateSpline(x=x_mesh.flatten(), y=y_mesh.flatten(), z=flow[:, :, 0].flatten())
     vec_u = u(coords[:, 0], coords[:, 1], grid=False)
 
-    v = SmoothBivariateSpline(x=x_mesh.flatten(), y=y_mesh.flatten(), z=flow[:, 1].flatten())
+    v = SmoothBivariateSpline(x=x_mesh.flatten(), y=y_mesh.flatten(), z=flow[:, :, 1].flatten())
     vec_v = v(coords[:, 0], coords[:, 1], grid=False)
 
     vec = np.stack([vec_u, vec_v], axis=-1)  # (n_particles, 2)
@@ -369,7 +369,7 @@ def particles_from_flow(
                 np.random.uniform(1, x, num_particles),
                 np.random.uniform(1, y, num_particles),
             ],
-            axis=0,
+            axis=-1,
         )
 
         a, b = intensity_bounds
@@ -377,11 +377,9 @@ def particles_from_flow(
         a, b = diameter_bounds
         diams = np.random.uniform(a, b, num_particles)
 
-        coords1 = coords
-        coords2 = coords.copy()
-        vec = flow_from_coordinates(x_mesh, y_mesh, coords2, flow[i], vmax=vmax)
-        coords1 = coords1 - 0.5 * vec
-        coords2 = coords2 + 0.5 * vec
+        vec = flow_from_coordinates(x_mesh, y_mesh, coords, flow[i], vmax=vmax)
+        coords1 = coords - 0.5 * vec
+        coords2 = coords + 0.5 * vec
 
         batch_coords1.append(coords1[:num_particles_image])
         batch_coords2.append(coords2[-num_particles_image:])
@@ -405,7 +403,7 @@ def image_from_flow(ppp, pip, flow, **options):
     :param options:
     :return:
     """
-    y, x = res = flow.shape[:-1]
+    y, x = res = flow.shape[1:-1]
     x_mesh, y_mesh = meshgrid = np.meshgrid(np.arange(x), np.arange(y), indexing='ij')
 
     coords1, coords2, intens, diams = particles_from_flow(ppp, pip, x_mesh, y_mesh, flow, **options)
@@ -427,13 +425,19 @@ def images_from_particles(res, meshgrid, coords, intens, diams):
     :return: images (batch_size, res)
     """
     bs = coords.shape[0]
-    image = np.zeros([bs] + res, dtype=np.float32)
+    image = np.zeros([bs] + list(res), dtype=np.float32)
 
     xg, yg = meshgrid
+    xg = np.repeat(np.expand_dims(xg, 0), bs, 0)
+    yg = np.repeat(np.expand_dims(yg, 0), bs, 0)
 
     for (x, y), diam, inten in zip(
-        coords.transpose(1, 0, 2), intens.T, diams.T
+            coords.transpose(1, 2, 0), intens.T, diams.T
     ):
+        x = np.reshape(x, x.shape + (1, 1))
+        y = np.reshape(y, y.shape + (1, 1))
+        diam = np.reshape(diam, diam.shape + (1, 1))
+        inten = np.reshape(inten, inten.shape + (1, 1))
         image += inten * np.exp(- 8 * ((xg - x) ** 2 + (yg - y) ** 2) / (diam ** 2))
 
     return image
