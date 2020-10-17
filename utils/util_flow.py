@@ -429,10 +429,11 @@ def images_from_particles(
 
     # @nb.jit(nopython=True)
     def transform_image(
-        image,
-        coords,
-        intens,
-        diams):
+        image: np.ndarray,
+        coords: np.ndarray,
+        intens: np.ndarray,
+        diams: np.ndarray,
+    ) -> np.ndarray:
         for i in range(coords.shape[0]):
             x = coords[i, 0]
             y = coords[i, 1]
@@ -472,7 +473,12 @@ def faster_images_from_particles(
     xg, yg = meshgrid
 
     # @nb.njit()
-    def transform_image(image, coords, intens, diams):
+    def transform_image(
+        image: np.ndarray,
+        coords: np.ndarray,
+        intens: np.ndarray,
+        diams: np.ndarray,
+    ) -> np.ndarray:
         for i in range(bs):
             ids_x_0 = np.maximum(coords[i, :, 0] - diams[i], 0).astype(np.int32)
             ids_x_1 = np.minimum(coords[i, :, 0] + diams[i], res[0]).astype(np.int32)
