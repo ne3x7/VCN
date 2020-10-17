@@ -386,7 +386,7 @@ def image_from_flow(
     pip: float,
     flow: np.ndarray,
     **options
-):
+) -> Tuple[np.ndarray, np.ndarray]:
     """Generates images from flow.
 
     :param ppp: density, particles per pixes
@@ -412,7 +412,7 @@ def images_from_particles(
     coords: np.ndarray,
     intens: np.ndarray,
     diams: np.ndarray
-):
+) -> np.ndarray:
     """Generates images assuming particles are Gaussians.
 
     :param res: resolution
