@@ -56,7 +56,6 @@ class myImageFloder(data.Dataset):
         self.black = black
 
     def __getitem__(self, index):
-        used_source = "file"
         th, tw = self.shape
 
         if np.random.rand() > 0.3:
@@ -72,7 +71,6 @@ class myImageFloder(data.Dataset):
             iml1 = iml1[:, :, None].copy()  # iml1[:,:,::-1].copy()
             flowl0 = self.dploader(flowl0)
         else:
-            used_source = "synth"
             flowl0 = random_incompressible_flow(
                 1,
                 self.shape,
@@ -89,6 +87,7 @@ class myImageFloder(data.Dataset):
             iml0 = iml0.transpose(1, 2, 0).copy()
             iml1 = iml1.transpose(1, 2, 0).copy()
             flowl0 = flowl0[0]
+            flowl0[:, :, 2] = 1
 
         flowl0 = np.ascontiguousarray(flowl0, dtype=np.float32)
         flowl0[np.isnan(flowl0)] = 1e6  # set to max
@@ -168,8 +167,6 @@ class myImageFloder(data.Dataset):
 
         iml0 = torch.Tensor(np.transpose(iml0, (2, 0, 1)))
         iml1 = torch.Tensor(np.transpose(iml1, (2, 0, 1)))
-
-        assert flowl0.shape[-1] == 2, used_source
 
         return iml0, iml1, flowl0
 
