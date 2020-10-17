@@ -5,6 +5,9 @@ import array
 import numpy as np
 import cv2
 import pdb
+from phi.flow import *
+from typing import Tuple, List, Optional
+from scipy.interpolate import SmoothBivariateSpline, RectBivariateSpline
 
 from io import *
 
@@ -270,3 +273,167 @@ def load_calib_cam_to_cam(cam_to_cam_file):
 
     return data
 
+
+def random_incompressible_flow(
+    batch_size: int,
+    size: List[int, int],
+    power: int,
+    incompressible: bool = True
+) -> np.ndarray:
+    """Produces random (possibly incompressible) flow with fixed resolution.
+
+    :param batch_size: number of flows to generate
+    :param size: grid size list [sy, sx]
+    :param power: kind of magnitude of k (wave vector)
+    :param incompressible: removes divergence
+    :return: flow at grid shape (batch_size, sy, sx, 2)
+    """
+    world = World(batch_size=batch_size)
+    domain = Domain(size, boundaries=PERIODIC)
+    initial_velocity = domain.staggered_grid(
+        data=math.randfreq([batch_size] + size + [2], power=power), name='velocity'
+    )
+    if incompressible:
+        initial_velocity = divergence_free(initial_velocity, domain)
+    return initial_velocity.at_centers().data
+
+
+def flow_from_coordinates(
+    x_mesh: np.ndarray,
+    y_mesh: np.ndarray,
+    coords: np.ndarray,
+    flow: np.ndarray,
+    vmax: Optional[float] = None,
+) -> np.ndarray:
+    """Get flow at coordinates by interpolating flow on grid.
+
+    :param x_mesh: coordinates in flow
+    :param y_mesh: coordinates in flow
+    :param coords: shape (n_particles, 2)
+    :param vmax: max value for flow
+    :param flow: shape (sy, sx, 2)
+    :return: flow at coordinates, shape (n_particles, 2)
+    """
+    u = SmoothBivariateSpline(x=x_mesh.flatten(), y=y_mesh.flatten(), z=flow[:, 0].flatten())
+    vec_u = u(coords[:, 0], coords[:, 1], grid=False)
+
+    v = SmoothBivariateSpline(x=x_mesh.flatten(), y=y_mesh.flatten(), z=flow[:, 1].flatten())
+    vec_v = v(coords[:, 0], coords[:, 1], grid=False)
+
+    vec = np.stack([vec_u, vec_v], axis=-1)  # (n_particles, 2)
+
+    if vmax is not None:
+        vec = vec * vmax / np.max(np.abs(vec))
+
+    return vec
+
+
+def particles_from_flow(
+    ppp: float,
+    pip: float,
+    x_mesh: np.ndarray,
+    y_mesh: np.ndarray,
+    flow: np.ndarray,
+    intensity_bounds: Tuple[float, float],
+    diameter_bounds: Tuple[float, float],
+    vmax: Optional[float] = None,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Get particle positions before and after advection.
+
+    :param x_mesh: coordinates in flow
+    :param y_mesh: coordinates in flow
+    :param ppp: density, particles per pixes
+    :param pip: loss, particles in plane percent
+    :param flow: shape (batch_size, sy, sx, 2)
+    :param vmax: max value for flow
+    :param intensity_bounds:
+    :param diameter_bounds:
+    :return:
+        - particle coordinates in first image (batch_size, n_particles, 2)
+        - particle coordinates in second image (batch_size, n_particles, 2)
+        - particle intensities (batch_size, n_particles)
+        - particle diameters (batch_size, n_particles)
+    """
+    batch_size = flow.shape[0]
+    y, x = res = flow.shape[1:-1]
+    num_particles = int(np.prod(res) * ppp)
+    num_particles_image = int(np.prod(res) * ppp / (pip ** 2))
+
+    batch_coords1 = []
+    batch_coords2 = []
+    batch_intens = []
+    batch_diams = []
+    for i in range(batch_size):
+        coords = np.stack(
+            [
+                np.random.uniform(1, x, num_particles),
+                np.random.uniform(1, y, num_particles),
+            ],
+            axis=0,
+        )
+
+        a, b = intensity_bounds
+        intens = np.random.uniform(a, b, num_particles)
+        a, b = diameter_bounds
+        diams = np.random.uniform(a, b, num_particles)
+
+        coords1 = coords
+        coords2 = coords.copy()
+        vec = flow_from_coordinates(x_mesh, y_mesh, coords2, flow[i], vmax=vmax)
+        coords1 = coords1 - 0.5 * vec
+        coords2 = coords2 + 0.5 * vec
+
+        batch_coords1.append(coords1[:num_particles_image])
+        batch_coords2.append(coords2[-num_particles_image:])
+        batch_intens.append(intens)
+        batch_diams.append(diams)
+
+    coords1 = np.stack(batch_coords1, axis=0)
+    coords2 = np.stack(batch_coords2, axis=0)
+    intens = np.stack(batch_intens, axis=0)
+    diams = np.stack(batch_diams, axis=0)
+
+    return coords1, coords2, intens, diams
+
+
+def image_from_flow(ppp, pip, flow, **options):
+    """Generates images from flow.
+
+    :param ppp:
+    :param pip:
+    :param flow:
+    :param options:
+    :return:
+    """
+    y, x = res = flow.shape[:-1]
+    x_mesh, y_mesh = meshgrid = np.meshgrid(np.arange(x), np.arange(y), indexing='ij')
+
+    coords1, coords2, intens, diams = particles_from_flow(ppp, pip, x_mesh, y_mesh, flow, **options)
+
+    images1 = images_from_particles(res, meshgrid, coords1, intens, diams)
+    images2 = images_from_particles(res, meshgrid, coords2, intens, diams)
+
+    return images1, images2
+
+
+def images_from_particles(res, meshgrid, coords, intens, diams):
+    """Generates images assuming particles are Gaussians.
+
+    :param res:
+    :param meshgrid:
+    :param coords: particle coordinates (batch_size, n_particles, 2)
+    :param intens: particle intensities (batch_size, n_particles)
+    :param diams: particle diameters (batch_size, n_particles)
+    :return: images (batch_size, res)
+    """
+    bs = coords.shape[0]
+    image = np.zeros([bs] + res, dtype=np.float32)
+
+    xg, yg = meshgrid
+
+    for (x, y), diam, inten in zip(
+        coords.transpose(1, 0, 2), intens.T, diams.T
+    ):
+        image += inten * np.exp(- 8 * ((xg - x) ** 2 + (yg - y) ** 2) / (diam ** 2))
+
+    return image
