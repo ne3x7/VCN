@@ -286,7 +286,7 @@ def train(imgL, imgR, flowl0):
     mask = (flowl0[:, :, :, 2] == 1) & (flowl0[:, :, :, 0].abs() < args.maxdisp) & (
             flowl0[:, :, :, 1].abs() < (args.maxdisp // args.fac))
     mask.detach_()
-    assert np.allclose(mask[0].float().cpu().numpy(), np.ones_like(mask[0].float().cpu().numpy()))
+    # assert np.allclose(mask[0].float().cpu().numpy(), np.ones_like(mask[0].float().cpu().numpy()))
 
     # rearrange inputs
     groups = []
