@@ -220,7 +220,7 @@ def test_intermittency_r(v_true, v_pred, fname):
     vals_pred = [calc_intermittency(v_pred, r=r, a=np.deg2rad(0), n=2, n_pts=1000) for r in r_vals]
     ax.loglog(r_vals, vals_true, label="true")
     ax.loglog(r_vals, vals_pred, label="pred")
-    ax.setPxlabel("Distance between points, r")
+    ax.set_xlabel("Distance between points, r")
     ax.set_ylabel("Intermittency")
     ax.legend()
     fig.savefig(fname)
@@ -233,7 +233,7 @@ def test_intermittency_n(v_true, v_pred, fname):
     vals_pred = [calc_intermittency(v_pred, r=3, a=np.deg2rad(0), n=n, n_pts=1000) for n in n_vals]
     ax.loglog(n_vals, vals_true, label="true")
     ax.loglog(n_vals, vals_pred, label="pred")
-    ax.setPxlabel("Power, n")
+    ax.set_xlabel("Power, n")
     ax.set_ylabel("Intermittency")
     ax.legend()
     fig.savefig(fname)
