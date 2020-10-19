@@ -34,7 +34,7 @@ from utils.util_flow import (
     pspec
 )
 cudnn.benchmark = False
-sns.set(style="whitegrid", fint_scale=1.5)
+sns.set(style="whitegrid", font_scale=1.5)
 sns.despine()
 
 parser = argparse.ArgumentParser(description='VCN')
