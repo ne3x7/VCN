@@ -327,6 +327,22 @@ def main():
         cv2.imwrite('%s/%s/%s-gt.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]), flow_to_image(flo)[:, :, ::-1])
         arrow_pic(flo, '%s/%s/%s-vec-gt.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]))
         arrow_pic(flow, '%s/%s/%s-vec.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]))
+        test_compressibility(
+            flo, flow,
+            '%s/%s/%s-compr.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0])
+        )
+        test_energy_spectrum(
+            flo, flow,
+            '%s/%s/%s-energy.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0])
+        )
+        test_intermittency_r(
+            flo, flow,
+            '%s/%s/%s-interm-r.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0])
+        )
+        test_intermittency_n(
+            flo, flow,
+            '%s/%s/%s-interm-n.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0])
+        )
         cv2.imwrite('%s/%s/%s-err.png' % (args.outdir, args.dataset, idxname.rsplit('.', 1)[0]), error)
     # cv2.imwrite('%s/%s/ent-%s.png'% (args.outdir, args.dataset,idxname.rsplit('.',1)[0]), entropy*200)
 
