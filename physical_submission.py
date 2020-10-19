@@ -231,8 +231,8 @@ def test_intermittency_n(v_true, v_pred, fname):
     n_vals = np.arange(2, 20)
     vals_true = [calc_intermittency(v_true, r=3, a=np.deg2rad(0), n=n, n_pts=1000) for n in n_vals]
     vals_pred = [calc_intermittency(v_pred, r=3, a=np.deg2rad(0), n=n, n_pts=1000) for n in n_vals]
-    ax.loglog(n_vals, vals_true, label="true")
-    ax.loglog(n_vals, vals_pred, label="pred")
+    ax.semilogy(n_vals, vals_true, label="true")
+    ax.semilogy(n_vals, vals_pred, label="pred")
     ax.set_xlabel("Power, n")
     ax.set_ylabel("Intermittency")
     ax.legend()
