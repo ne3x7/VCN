@@ -111,7 +111,7 @@ def main():
     flowl0 = random_incompressible_flow(
         1,
         [256, 256],
-        10. ** (2 * np.random.rand()),
+        np.random.choice([5, 10, 20, 30, 40, 50, 100, 200]), # 10. ** (2 * np.random.rand()),
         incompressible=False
     )
     iml0, iml1 = image_from_flow(
@@ -133,7 +133,7 @@ def main():
     flowl0 = np.ascontiguousarray(flowl0, dtype=np.float32)
     flowl0[np.isnan(flowl0)] = 1e6  # set to max
 
-    schedule_aug_coeff = 0.5
+    schedule_aug_coeff = 1.0
 
     scl = 0.  # 0.2 * schedule_aug_coeff
     if scl > 0:
