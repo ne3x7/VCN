@@ -139,16 +139,17 @@ class SpatialAug(object):
             # im0
             self.to_identity()
             # TODO add mirror
-            if np.random.binomial(1, 0.5):
-                mirror = True
-            else:
-                mirror = False
+            # if np.random.binomial(1, 0.5):
+            #     mirror = True
+            # else:
+            #     mirror = False
+            mirror = False
             # TODO
             # mirror = False
-            if mirror:
-                self.left_multiply(-1, 0, 0, 1, .5 * tw, -.5 * th)
-            else:
-                self.left_multiply(1, 0, 0, 1, -.5 * tw, -.5 * th)
+            # if mirror:
+            #     self.left_multiply(-1, 0, 0, 1, .5 * tw, -.5 * th)
+            # else:
+            #     self.left_multiply(1, 0, 0, 1, -.5 * tw, -.5 * th)
             scale0 = 1
             scale1 = 1
             squeeze0 = 1
@@ -172,21 +173,21 @@ class SpatialAug(object):
                                                   self.scale[1] * self.schedule_coeff)) * scale0
             self.left_multiply(1.0 / (scale0 * squeeze0), 0, 0, 1.0 / (scale0 / squeeze0), 0, 0)
 
-            self.left_multiply(1, 0, 0, 1, .5 * w, .5 * h);
+            # self.left_multiply(1, 0, 0, 1, .5 * w, .5 * h);
             transmat0 = self.t.copy()
 
             # im1
             self.to_identity()
-            if mirror:
-                self.left_multiply(-1, 0, 0, 1, .5 * tw, -.5 * th);
-            else:
-                self.left_multiply(1, 0, 0, 1, -.5 * tw, -.5 * th);
+            # if mirror:
+            #     self.left_multiply(-1, 0, 0, 1, .5 * tw, -.5 * th);
+            # else:
+            #     self.left_multiply(1, 0, 0, 1, -.5 * tw, -.5 * th);
             if not self.rot is None:
                 self.left_multiply(np.cos(rot1), np.sin(rot1), -np.sin(rot1), np.cos(rot1), 0, 0)
             if not self.trans is None:
                 self.left_multiply(1, 0, 0, 1, trans1[0] * tw, trans1[1] * th)
             self.left_multiply(1.0 / (scale1 * squeeze1), 0, 0, 1.0 / (scale1 / squeeze1), 0, 0)
-            self.left_multiply(1, 0, 0, 1, .5 * w, .5 * h);
+            # self.left_multiply(1, 0, 0, 1, .5 * w, .5 * h);
             transmat1 = self.t.copy()
             transmat1_inv = self.inverse()
 
@@ -201,8 +202,8 @@ class SpatialAug(object):
         if i == 49:
             print('max_iter in augmentation')
             self.to_identity()
-            self.left_multiply(1, 0, 0, 1, -.5 * tw, -.5 * th);
-            self.left_multiply(1, 0, 0, 1, .5 * w, .5 * h);
+            # self.left_multiply(1, 0, 0, 1, -.5 * tw, -.5 * th);
+            # self.left_multiply(1, 0, 0, 1, .5 * w, .5 * h);
             transmat0 = self.t.copy()
             transmat1 = self.t.copy()
 
