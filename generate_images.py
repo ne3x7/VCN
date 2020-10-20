@@ -151,21 +151,21 @@ def main():
 
     schedule_aug_coeff = 1.0
 
-    scl = 0.  # 0.2 * schedule_aug_coeff
-    if scl > 0:
-        scl = [0.2 * schedule_aug_coeff, 0., 0.2 * schedule_aug_coeff]
-    else:
-        scl = None
+    scl = None  # 0.2 * schedule_aug_coeff
+    # if scl > 0:
+    #     scl = [0.2 * schedule_aug_coeff, 0., 0.2 * schedule_aug_coeff]
+    # else:
+    #     scl = None
     rot = 0.17 * schedule_aug_coeff
     if rot > 0:
         rot = [0.17 * schedule_aug_coeff, 0.0]
     else:
         rot = None
-    trans = 0.2 * schedule_aug_coeff
-    if trans > 0:
-        trans = [0.2 * schedule_aug_coeff, 0.0]
-    else:
-        trans = None
+    trans = None  # 0.2 * schedule_aug_coeff
+    # if trans > 0:
+    #     trans = [0.2 * schedule_aug_coeff, 0.0]
+    # else:
+    #     trans = None
 
     co_transform = flow_transforms.Compose([
         flow_transforms.Scale(1, order=0),
