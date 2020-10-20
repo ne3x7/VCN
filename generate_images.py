@@ -147,6 +147,8 @@ def main():
     flowl0 = np.ascontiguousarray(flowl0, dtype=np.float32)
     flowl0[np.isnan(flowl0)] = 1e6  # set to max
 
+    cv2.imwrite('%s/%s/%s.png' % (args.outdir, "generated", "flow-orig"), flow_to_image(flowl0)[:, :, ::-1])
+
     schedule_aug_coeff = 1.0
 
     scl = 0.  # 0.2 * schedule_aug_coeff
