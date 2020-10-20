@@ -206,6 +206,7 @@ class SpatialAug(object):
             # self.left_multiply(1, 0, 0, 1, .5 * w, .5 * h);
             transmat0 = self.t.copy()
             transmat1 = self.t.copy()
+            transmat1_inv = self.inverse()
 
         # do the real work
         vgrid = self.grid_transform(meshgrid, transmat0, gridsize=[float(h), float(w)])
