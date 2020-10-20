@@ -35,7 +35,7 @@ from utils.util_flow import (
 )
 cudnn.benchmark = False
 sns.set(style="whitegrid", font_scale=1.5)
-sns.set_color_codes("muted")
+sns.set_color_codes("deep")
 sns.despine()
 
 parser = argparse.ArgumentParser(description='VCN')
@@ -201,8 +201,8 @@ def test_compressibility(pairs, fname):
         c_true = calc_compressibility(v_true)
         c_pred = calc_compressibility(v_pred)
 
-        sns.kdeplot(c_true.flatten(), c="b", label="true", ax=ax, alpha=0.1)
-        sns.kdeplot(c_pred.flatten(), c="y", label="pred", ax=ax, alpha=0.1)
+        sns.kdeplot(c_true.flatten(), c="b", label="true", ax=ax, alpha=0.5)
+        sns.kdeplot(c_pred.flatten(), c="y", label="pred", ax=ax, alpha=0.5)
 
     ax.set_xlabel("Pixel-wise divergence")
     handles, labels = ax.get_legend_handles_labels()
@@ -221,12 +221,12 @@ def test_energy_spectrum(pairs, fname):
     for v_true, v_pred in pairs:
         xvals_true, yvals_true = pspec(np.absolute(calc_energy_spectrum(v_true)) ** 2)
         xvals_pred, yvals_pred = pspec(np.absolute(calc_energy_spectrum(v_pred)) ** 2)
-        ax.loglog(xvals_true, yvals_true, c="b", label="true", alpha=0.1)
-        ax.loglog(xvals_pred, yvals_pred, c="y", label="pred", alpha=0.1)
+        ax.loglog(xvals_true, yvals_true, c="b", label="true", alpha=0.5)
+        ax.loglog(xvals_pred, yvals_pred, c="y", label="pred", alpha=0.5)
         pspecs_pred.append(yvals_pred)
         pspecs_true.append(yvals_true)
-    ax.loglog(xvals_true, np.mean(pspecs_true, axis=0), c="b", label="mean true", alpha=0.5)
-    ax.loglog(xvals_pred, np.mean(pspecs_pred, axis=0), c="y", label="mean pred", alpha=0.5)
+    ax.loglog(xvals_true, np.mean(pspecs_true, axis=0), c="b", label="mean true", alpha=1)
+    ax.loglog(xvals_pred, np.mean(pspecs_pred, axis=0), c="y", label="mean pred", alpha=1)
     ax.set_xlabel("Spatial frequency")
     ax.set_ylabel("Power Spectrum")
     handles, labels = ax.get_legend_handles_labels()
@@ -246,12 +246,12 @@ def test_intermittency_r(pairs, fname):
     for v_true, v_pred in pairs:
         vals_true = [calc_intermittency(v_true, r=r, a=np.deg2rad(0), n=2, n_pts=1000) for r in r_vals]
         vals_pred = [calc_intermittency(v_pred, r=r, a=np.deg2rad(0), n=2, n_pts=1000) for r in r_vals]
-        ax.loglog(r_vals, vals_true, label="true", c="b", alpha=0.1)
-        ax.loglog(r_vals, vals_pred, label="pred", c="y", alpha=0.1)
+        ax.loglog(r_vals, vals_true, label="true", c="b", alpha=0.5)
+        ax.loglog(r_vals, vals_pred, label="pred", c="y", alpha=0.5)
         interms_true.append(vals_true)
         interms_pred.append(vals_pred)
-    ax.loglog(r_vals, np.mean(interms_true, axis=0), c="b", label="mean true", alpha=0.5)
-    ax.loglog(r_vals, np.mean(interms_pred, axis=0), c="y", label="mean pred", alpha=0.5)
+    ax.loglog(r_vals, np.mean(interms_true, axis=0), c="b", label="mean true", alpha=1)
+    ax.loglog(r_vals, np.mean(interms_pred, axis=0), c="y", label="mean pred", alpha=1)
     ax.set_xlabel("Distance between points, r")
     ax.set_ylabel("Intermittency")
     handles, labels = ax.get_legend_handles_labels()
@@ -271,12 +271,12 @@ def test_intermittency_n(pairs, fname):
     for v_true, v_pred in pairs:
         vals_true = [calc_intermittency(v_true, r=3, a=np.deg2rad(0), n=n, n_pts=1000) for n in n_vals]
         vals_pred = [calc_intermittency(v_pred, r=3, a=np.deg2rad(0), n=n, n_pts=1000) for n in n_vals]
-        ax.semilogy(n_vals, vals_true, c="b", label="true", alpha=0.1)
-        ax.semilogy(n_vals, vals_pred, c="y", label="pred", alpha=0.1)
+        ax.semilogy(n_vals, vals_true, c="b", label="true", alpha=0.5)
+        ax.semilogy(n_vals, vals_pred, c="y", label="pred", alpha=0.5)
         interms_true.append(vals_true)
         interms_pred.append(vals_pred)
-    ax.semilogy(n_vals, np.mean(interms_true, axis=0), c="b", label="mean true", alpha=0.5)
-    ax.semilogy(n_vals, np.mean(interms_pred, axis=0), c="y", label="mean pred", alpha=0.5)
+    ax.semilogy(n_vals, np.mean(interms_true, axis=0), c="b", label="mean true", alpha=1)
+    ax.semilogy(n_vals, np.mean(interms_pred, axis=0), c="y", label="mean pred", alpha=1)
     ax.set_xlabel("Power, n")
     ax.set_ylabel("Intermittency")
     handles, labels = ax.get_legend_handles_labels()
