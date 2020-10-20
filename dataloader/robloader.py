@@ -40,7 +40,7 @@ def disparity_loader(path):
 
 class myImageFloder(data.Dataset):
     def __init__(self, iml0, iml1, flowl0, loader=default_loader, dploader=flow_loader, scale=1., shape=[320, 448],
-                 order=1, noise=0.06, pca_augmentor=True, prob=1., cover=False, black=False):
+                 order=1, noise=0.06, pca_augmentor=True, prob=1., cover=False, black=True):
         self.iml0 = iml0
         self.iml1 = iml1
         self.flowl0 = flowl0
