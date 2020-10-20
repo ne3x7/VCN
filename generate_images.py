@@ -27,7 +27,9 @@ from scipy.interpolate import RectBivariateSpline
 from torch.autograd import Variable
 import time
 from utils.io import mkdir_p
+from dataloader.robloader import default_loader
 from utils.util_flow import write_flow, save_pfm, random_incompressible_flow, image_from_flow
+from utils.flowlib import read_flow
 
 cudnn.benchmark = False
 sns.set(style="whitegrid", font_scale=1.5)
@@ -108,26 +110,38 @@ mkdir_p('%s/%s/' % (args.outdir, "generated"))
 def main():
     model.eval()
 
-    flowl0 = random_incompressible_flow(
-        1,
-        [256, 256],
-        np.random.choice([30, 40, 50]), # 10. ** (2 * np.random.rand()),
-        incompressible=False
-    )
-    iml0, iml1 = image_from_flow(
-        ppp=np.random.uniform(0.008, 0.1),
-        pip=np.random.uniform(0.95, 1.0),
-        flow=flowl0,
-        intensity_bounds=(0.8, 1),
-        diameter_bounds=(0.35, 6)
-    )
-    iml0 = iml0.transpose(1, 2, 0).copy()
-    iml1 = iml1.transpose(1, 2, 0).copy()
-    flowl0 = flowl0[0]
-    flowl0 = np.concatenate([
-        flowl0,
-        np.ones(flowl0.shape[:-1] + (1,), dtype=flowl0.dtype)
-    ], axis=-1)
+    flowl0 = "/gpfs/gpfs0/y.maximov/kolya/piv/SQG/SQG_00001_flow.flo"
+    iml0 = "/gpfs/gpfs0/y.maximov/kolya/piv/SQG/SQG_00001_img1.tif"
+    iml1 = "/gpfs/gpfs0/y.maximov/kolya/piv/SQG/SQG_00001_img2.tif"
+
+    iml0 = default_loader(iml0)
+    iml1 = default_loader(iml1)
+    iml1 = np.asarray(iml1) / 255.
+    iml0 = np.asarray(iml0) / 255.
+    iml0 = iml0[:, :, None].copy()  # iml0[:,:,::-1].copy()
+    iml1 = iml1[:, :, None].copy()  # iml1[:,:,::-1].copy()
+    flowl0 = read_flow(flowl0)
+
+    # flowl0 = random_incompressible_flow(
+    #     1,
+    #     [256, 256],
+    #     np.random.choice([30, 40, 50]), # 10. ** (2 * np.random.rand()),
+    #     incompressible=False
+    # )
+    # iml0, iml1 = image_from_flow(
+    #     ppp=np.random.uniform(0.008, 0.1),
+    #     pip=np.random.uniform(0.95, 1.0),
+    #     flow=flowl0,
+    #     intensity_bounds=(0.8, 1),
+    #     diameter_bounds=(0.35, 6)
+    # )
+    # iml0 = iml0.transpose(1, 2, 0).copy()
+    # iml1 = iml1.transpose(1, 2, 0).copy()
+    # flowl0 = flowl0[0]
+    # flowl0 = np.concatenate([
+    #     flowl0,
+    #     np.ones(flowl0.shape[:-1] + (1,), dtype=flowl0.dtype)
+    # ], axis=-1)
 
 
     flowl0 = np.ascontiguousarray(flowl0, dtype=np.float32)
@@ -140,7 +154,7 @@ def main():
         scl = [0.2 * schedule_aug_coeff, 0., 0.2 * schedule_aug_coeff]
     else:
         scl = None
-    rot = 0  # 0.17 * schedule_aug_coeff
+    rot = 0.17 * schedule_aug_coeff
     if rot > 0:
         rot = [0.17 * schedule_aug_coeff, 0.0]
     else:
