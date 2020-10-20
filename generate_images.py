@@ -184,9 +184,9 @@ def main():
     iml1 = augmented[1]
 
     cv2.imwrite('%s/%s/%s.png' % (args.outdir, "generated", "flow"), flow_to_image(flowl0)[:, :, ::-1])
-    cv2.imwrite('%s/%s/%s.png' % (args.outdir, "generated", "mask"), flowl0[:, :, -1])
-    cv2.imwrite('%s/%s/%s.png' % (args.outdir, "generated", "img1"), iml0[:, :, ::-1])
-    cv2.imwrite('%s/%s/%s.png' % (args.outdir, "generated", "img2"), iml1[:, :, ::-1])
+    cv2.imwrite('%s/%s/%s.png' % (args.outdir, "generated", "mask"), 255*flowl0[:, :, -1])
+    cv2.imwrite('%s/%s/%s.png' % (args.outdir, "generated", "img1"), 255*iml0[:, :, ::-1])
+    cv2.imwrite('%s/%s/%s.png' % (args.outdir, "generated", "img2"), 255*iml1[:, :, ::-1])
 
 if __name__ == '__main__':
     main()
