@@ -140,12 +140,12 @@ def main():
         scl = [0.2 * schedule_aug_coeff, 0., 0.2 * schedule_aug_coeff]
     else:
         scl = None
-    rot = 0.17 * schedule_aug_coeff
+    rot = 0  # 0.17 * schedule_aug_coeff
     if rot > 0:
         rot = [0.17 * schedule_aug_coeff, 0.0]
     else:
         rot = None
-    trans = 0  # 0.2 * schedule_aug_coeff
+    trans = 0.2 * schedule_aug_coeff
     if trans > 0:
         trans = [0.2 * schedule_aug_coeff, 0.0]
     else:
