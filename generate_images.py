@@ -135,37 +135,37 @@ def main():
 
     schedule_aug_coeff = 1.0
 
-    # scl = 0.  # 0.2 * schedule_aug_coeff
-    # if scl > 0:
-    #     scl = [0.2 * schedule_aug_coeff, 0., 0.2 * schedule_aug_coeff]
-    # else:
-    #     scl = None
-    # rot = 0.17 * schedule_aug_coeff
-    # if rot > 0:
-    #     rot = [0.17 * schedule_aug_coeff, 0.0]
-    # else:
-    #     rot = None
-    # trans = 0.2 * schedule_aug_coeff
-    # if trans > 0:
-    #     trans = [0.2 * schedule_aug_coeff, 0.0]
-    # else:
-    #     trans = None
-    #
-    # co_transform = flow_transforms.Compose([
-    #     flow_transforms.Scale(1, order=1),
-    #     flow_transforms.SpatialAug([256, 256], scale=scl,
-    #                                rot=rot,
-    #                                trans=trans,
-    #                                schedule_coeff=1,
-    #                                order=1,
-    #                                black=False),
-    #     # flow_transforms.PCAAug(schedule_coeff=schedule_coeff),
-    #     # flow_transforms.ChromaticAug(schedule_coeff=schedule_coeff, noise=self.noise),
-    # ])
-    #
-    # augmented, flowl0 = co_transform([iml0, iml1], flowl0)
-    # iml0 = augmented[0]
-    # iml1 = augmented[1]
+    scl = 0.  # 0.2 * schedule_aug_coeff
+    if scl > 0:
+        scl = [0.2 * schedule_aug_coeff, 0., 0.2 * schedule_aug_coeff]
+    else:
+        scl = None
+    rot = 0.17 * schedule_aug_coeff
+    if rot > 0:
+        rot = [0.17 * schedule_aug_coeff, 0.0]
+    else:
+        rot = None
+    trans = 0.2 * schedule_aug_coeff
+    if trans > 0:
+        trans = [0.2 * schedule_aug_coeff, 0.0]
+    else:
+        trans = None
+
+    co_transform = flow_transforms.Compose([
+        flow_transforms.Scale(1, order=3),
+        flow_transforms.SpatialAug([256, 256], scale=scl,
+                                   rot=rot,
+                                   trans=trans,
+                                   schedule_coeff=1,
+                                   order=3,
+                                   black=False),
+        # flow_transforms.PCAAug(schedule_coeff=schedule_coeff),
+        # flow_transforms.ChromaticAug(schedule_coeff=schedule_coeff, noise=self.noise),
+    ])
+
+    augmented, flowl0 = co_transform([iml0, iml1], flowl0)
+    iml0 = augmented[0]
+    iml1 = augmented[1]
 
     cv2.imwrite('%s/%s/%s.png' % (args.outdir, "generated", "flow"), flow_to_image(flowl0)[:, :, ::-1])
     cv2.imwrite('%s/%s/%s.png' % (args.outdir, "generated", "img1"), iml0[:, :, ::-1])
