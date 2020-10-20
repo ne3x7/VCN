@@ -111,7 +111,7 @@ def main():
     flowl0 = random_incompressible_flow(
         1,
         [256, 256],
-        np.random.choice([30, 40, 50, 100, 200]), # 10. ** (2 * np.random.rand()),
+        np.random.choice([30, 40, 50]), # 10. ** (2 * np.random.rand()),
         incompressible=False
     )
     iml0, iml1 = image_from_flow(
