@@ -174,7 +174,7 @@ def main():
                                    trans=trans,
                                    schedule_coeff=1,
                                    order=0,
-                                   black=False),
+                                   black=True),
         # flow_transforms.PCAAug(schedule_coeff=schedule_coeff),
         # flow_transforms.ChromaticAug(schedule_coeff=schedule_coeff, noise=self.noise),
     ])
