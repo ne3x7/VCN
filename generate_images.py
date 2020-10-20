@@ -168,7 +168,7 @@ def main():
     #     trans = None
 
     co_transform = flow_transforms.Compose([
-        flow_transforms.Scale(1, order=0),
+        # flow_transforms.Scale(1, order=0),
         flow_transforms.SpatialAug([256, 256], scale=scl,
                                    rot=rot,
                                    trans=trans,
