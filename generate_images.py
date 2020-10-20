@@ -161,11 +161,11 @@ def main():
         rot = [0.17 * schedule_aug_coeff, 0.0]
     else:
         rot = None
-    trans = None  # 0.2 * schedule_aug_coeff
-    # if trans > 0:
-    #     trans = [0.2 * schedule_aug_coeff, 0.0]
-    # else:
-    #     trans = None
+    trans = 0.2 * schedule_aug_coeff
+    if trans > 0:
+        trans = [0.2 * schedule_aug_coeff, 0.0]
+    else:
+        trans = None
 
     co_transform = flow_transforms.Compose([
         # flow_transforms.Scale(1, order=0),
