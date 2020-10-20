@@ -152,12 +152,12 @@ def main():
         trans = None
 
     co_transform = flow_transforms.Compose([
-        flow_transforms.Scale(1, order=3),
+        # flow_transforms.Scale(1, order=2),
         flow_transforms.SpatialAug([256, 256], scale=scl,
                                    rot=rot,
                                    trans=trans,
                                    schedule_coeff=1,
-                                   order=3,
+                                   order=2,
                                    black=False),
         # flow_transforms.PCAAug(schedule_coeff=schedule_coeff),
         # flow_transforms.ChromaticAug(schedule_coeff=schedule_coeff, noise=self.noise),
