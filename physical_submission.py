@@ -184,10 +184,11 @@ def arrow_pic(field, fname):
         for j in range(ny):
             vz_mesh[i,j] = ipv(x_mesh[i,j], y_mesh[i,j])
             
-    fig, ax = plt.subplots(figsize=(10,10))
+    fig, ax = plt.subplots()
     ax.imshow(flow_to_image(field))
     ax.quiver(xs, ys, uz_mesh, vz_mesh, angles='xy')
     ax.axis('off')
+    fig.tight_layout()
     fig.savefig(fname)
 
 
@@ -200,6 +201,7 @@ def test_compressibility(v_true, v_pred, fname):
     sns.distplot(c_pred.flatten(), hist=True, bins=50, kde=True, label="pred", ax=ax)
     ax.set_xlabel("Pixel-wise divergence")
     ax.legend()
+    fig.tight_layout()
     fig.savefig(fname)
 
 
@@ -210,6 +212,7 @@ def test_energy_spectrum(v_true, v_pred, fname):
     ax.set_xlabel("Spatial frequency")
     ax.set_ylabel("Power Spectrum")
     ax.legend()
+    fig.tight_layout()
     fig.savefig(fname)
 
 
@@ -223,6 +226,7 @@ def test_intermittency_r(v_true, v_pred, fname):
     ax.set_xlabel("Distance between points, r")
     ax.set_ylabel("Intermittency")
     ax.legend()
+    fig.tight_layout()
     fig.savefig(fname)
 
 
@@ -236,6 +240,7 @@ def test_intermittency_n(v_true, v_pred, fname):
     ax.set_xlabel("Power, n")
     ax.set_ylabel("Intermittency")
     ax.legend()
+    fig.tight_layout()
     fig.savefig(fname)
 
 
