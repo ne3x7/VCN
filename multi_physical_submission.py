@@ -292,7 +292,7 @@ inx_st = test_left_img.index(args.image_start)
 inx_fn = test_left_img.index(args.image_end)
 
 
-mkdir_p('%s/%s/%d_%d' % (args.outdir, args.dataset, inx_st, inx_fn))
+mkdir_p('%s/%s' % (args.outdir, args.dataset))
 def main():
     model.eval()
 
