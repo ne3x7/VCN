@@ -26,7 +26,7 @@ from scipy.interpolate import RectBivariateSpline
 from torch.autograd import Variable
 import time
 from utils.io import mkdir_p
-from utils.util_flow import write_flow, save_pfm
+from utils.util_flow import write_flow, save_pfm, calc_velocity_gradient
 from utils.util_flow import (
     calc_compressibility,
     calc_energy_spectrum,
@@ -195,11 +195,14 @@ def arrow_pic(field, fname):
 def test_compressibility(v_true, v_pred, fname):
     c_true = calc_compressibility(v_true)
     c_pred = calc_compressibility(v_pred)
+    vel_grad = calc_velocity_gradient(v_true)
 
     fig, ax = plt.subplots()
-    sns.distplot(c_true.flatten(), hist=True, bins=50, kde=True, label="true", ax=ax)
-    sns.distplot(c_pred.flatten(), hist=True, bins=50, kde=True, label="pred", ax=ax)
-    ax.set_xlabel("Pixel-wise divergence")
+    sns.distplot(c_true.flatten(), hist=True, bins=50, kde=True, label="true divergence", ax=ax)
+    sns.distplot(c_pred.flatten(), hist=True, bins=50, kde=True, label="pred divergence", ax=ax)
+    sns.kdeplot(vel_grad.flatten(), label="true velocity gradient", ax=ax, ls='--')
+    ax.set_xlabel("Velocity Divergence")
+    ax.set_ylabel("Probability Density")
     ax.legend()
     fig.tight_layout()
     fig.savefig(fname)
@@ -207,9 +210,9 @@ def test_compressibility(v_true, v_pred, fname):
 
 def test_energy_spectrum(v_true, v_pred, fname):
     fig, ax = plt.subplots()
-    ax.loglog(*pspec(np.absolute(calc_energy_spectrum(v_true)) ** 2), label="true")
-    ax.loglog(*pspec(np.absolute(calc_energy_spectrum(v_pred)) ** 2), label="pred")
-    ax.set_xlabel("Spatial frequency")
+    ax.semilogy(*pspec(np.absolute(calc_energy_spectrum(v_true)) ** 2, wavenumber=True), label="true")
+    ax.semilogy(*pspec(np.absolute(calc_energy_spectrum(v_pred)) ** 2, wavenumber=True), label="pred")
+    ax.set_xlabel("Wave number")
     ax.set_ylabel("Power Spectrum")
     ax.legend()
     fig.tight_layout()
@@ -223,8 +226,8 @@ def test_intermittency_r(v_true, v_pred, fname):
     vals_pred = [calc_intermittency(v_pred, r=r, a=np.deg2rad(0), n=2, n_pts=1000) for r in r_vals]
     ax.loglog(r_vals, vals_true, label="true")
     ax.loglog(r_vals, vals_pred, label="pred")
-    ax.set_xlabel("Distance between points, r")
-    ax.set_ylabel("Intermittency")
+    ax.set_xlabel("Scale, $r$")
+    ax.set_ylabel("$2$-order Structure Function")
     ax.legend()
     fig.tight_layout()
     fig.savefig(fname)
@@ -237,8 +240,8 @@ def test_intermittency_n(v_true, v_pred, fname):
     vals_pred = [calc_intermittency(v_pred, r=3, a=np.deg2rad(0), n=n, n_pts=1000) for n in n_vals]
     ax.semilogy(n_vals, vals_true, label="true")
     ax.semilogy(n_vals, vals_pred, label="pred")
-    ax.set_xlabel("Power, n")
-    ax.set_ylabel("Intermittency")
+    ax.set_xlabel("Order, $n$")
+    ax.set_ylabel("$n$-th order Structure Function")
     ax.legend()
     fig.tight_layout()
     fig.savefig(fname)

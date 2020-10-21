@@ -197,14 +197,33 @@ def arrow_pic(field, fname):
 
 def test_compressibility(pairs, fname):
     fig, ax = plt.subplots()
+
+    c_trues = []
+    c_preds = []
+
     for v_true, v_pred in pairs:
-        c_true = calc_compressibility(v_true)
-        c_pred = calc_compressibility(v_pred)
+        c_trues.append(calc_compressibility(v_true))
+        c_preds.append(calc_compressibility(v_pred))
 
-        sns.kdeplot(c_true.flatten(), c="b", label="true", ax=ax, alpha=0.1)
-        sns.kdeplot(c_pred.flatten(), c="g", label="pred", ax=ax, alpha=0.1)
+    c_trues = np.asarray(c_trues)
+    c_preds = np.asarray(c_preds)
 
-    ax.set_xlabel("Pixel-wise divergence")
+    c_trues = c_trues / c_trues.sum(axis=1, keepdims=True)
+    c_preds = c_preds / c_preds.sum(axis=1, keepdims=True)
+
+    bins = np.histogram_bin_edges(
+        np.concatenate([c_preds.flatten(), c_trues.flatten()]),
+        bins=50
+    )
+
+    mean_true = np.mean(np.asarray([np.histogram(arr, bins=bins)[0] for arr in c_trues]), axis=0)
+    mean_pred = np.mean(np.asarray([np.histogram(arr, bins=bins)[0] for arr in c_preds]), axis=0)
+
+    sns.kdeplot(mean_true, c="b", label="true", ax=ax, alpha=0.1)
+    sns.kdeplot(mean_pred, c="g", label="pred", ax=ax, alpha=0.1)
+
+    ax.set_xlabel("PVelocity Divergence")
+    ax.set_ylabel("Probability Density")
     handles, labels = ax.get_legend_handles_labels()
     labels, indices = np.unique(labels, return_index=True)
     labels = labels.tolist()
@@ -219,15 +238,15 @@ def test_energy_spectrum(pairs, fname):
     pspecs_pred = []
     pspecs_true = []
     for v_true, v_pred in pairs:
-        xvals_true, yvals_true = pspec(np.absolute(calc_energy_spectrum(v_true)) ** 2)
-        xvals_pred, yvals_pred = pspec(np.absolute(calc_energy_spectrum(v_pred)) ** 2)
+        xvals_true, yvals_true = pspec(np.absolute(calc_energy_spectrum(v_true)) ** 2, wavenumber=True)
+        xvals_pred, yvals_pred = pspec(np.absolute(calc_energy_spectrum(v_pred)) ** 2, wavenumber=True)
         ax.loglog(xvals_true, yvals_true, c="b", alpha=0.1)
         ax.loglog(xvals_pred, yvals_pred, c="g", alpha=0.1)
         pspecs_pred.append(yvals_pred)
         pspecs_true.append(yvals_true)
     ax.loglog(xvals_true, np.mean(np.asarray(pspecs_true), axis=0), c="b", label="true", alpha=1)
     ax.loglog(xvals_pred, np.mean(np.asarray(pspecs_pred), axis=0), c="g", label="pred", alpha=1)
-    ax.set_xlabel("Spatial frequency")
+    ax.set_xlabel("Wave number")
     ax.set_ylabel("Power Spectrum")
     handles, labels = ax.get_legend_handles_labels()
     labels, indices = np.unique(labels, return_index=True)
@@ -252,8 +271,8 @@ def test_intermittency_r(pairs, fname):
         interms_pred.append(vals_pred)
     ax.loglog(r_vals, np.mean(np.asarray(interms_true), axis=0), c="b", label="true", alpha=1)
     ax.loglog(r_vals, np.mean(np.asarray(interms_pred), axis=0), c="g", label="pred", alpha=1)
-    ax.set_xlabel("Distance between points, r")
-    ax.set_ylabel("Intermittency")
+    ax.set_xlabel("Scale, $r$")
+    ax.set_ylabel("$2$-order Structure Function")
     handles, labels = ax.get_legend_handles_labels()
     labels, indices = np.unique(labels, return_index=True)
     labels = labels.tolist()
@@ -277,8 +296,8 @@ def test_intermittency_n(pairs, fname):
         interms_pred.append(vals_pred)
     ax.semilogy(n_vals, np.mean(np.asarray(interms_true), axis=0), c="b", label="true", alpha=1)
     ax.semilogy(n_vals, np.mean(np.asarray(interms_pred), axis=0), c="g", label="pred", alpha=1)
-    ax.set_xlabel("Power, n")
-    ax.set_ylabel("Intermittency")
+    ax.set_xlabel("Order, $n$")
+    ax.set_ylabel("$n$-th order Structure Function")
     handles, labels = ax.get_legend_handles_labels()
     labels, indices = np.unique(labels, return_index=True)
     labels = labels.tolist()

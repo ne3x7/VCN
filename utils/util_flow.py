@@ -526,6 +526,12 @@ def calc_compressibility(v):
     return sx + sy
 
 
+def calc_velocity_gradient(v):
+    sx = ndimage.sobel(v[0], axis=1, mode='constant')
+    sy = ndimage.sobel(v[1], axis=0, mode='constant')
+    return np.hypot(sx, sy)
+
+
 def calc_energy_spectrum(v):
     return fftshift(fft2(v[..., 0] + 1j * v[..., 1]))
 
