@@ -210,8 +210,8 @@ def test_compressibility(v_true, v_pred, fname):
 
 def test_energy_spectrum(v_true, v_pred, fname):
     fig, ax = plt.subplots()
-    ax.loglog(*pspec(np.absolute(calc_energy_spectrum(v_true)) ** 2, wavenumber=True), label="true")
-    ax.loglog(*pspec(np.absolute(calc_energy_spectrum(v_pred)) ** 2, wavenumber=True), label="pred")
+    ax.loglog(*pspec(np.absolute(calc_energy_spectrum(v_true)) ** 2), label="true")
+    ax.loglog(*pspec(np.absolute(calc_energy_spectrum(v_pred)) ** 2), label="pred")
     ax.set_xlabel("Wave number")
     ax.set_ylabel("Power Spectrum")
     ax.legend()

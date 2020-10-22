@@ -238,8 +238,8 @@ def test_energy_spectrum(pairs, fname):
     pspecs_pred = []
     pspecs_true = []
     for v_true, v_pred in pairs:
-        xvals_true, yvals_true = pspec(np.absolute(calc_energy_spectrum(v_true)) ** 2, wavenumber=True)
-        xvals_pred, yvals_pred = pspec(np.absolute(calc_energy_spectrum(v_pred)) ** 2, wavenumber=True)
+        xvals_true, yvals_true = pspec(np.absolute(calc_energy_spectrum(v_true)) ** 2)
+        xvals_pred, yvals_pred = pspec(np.absolute(calc_energy_spectrum(v_pred)) ** 2)
         ax.loglog(xvals_true, yvals_true, c="b", alpha=0.1)
         ax.loglog(xvals_pred, yvals_pred, c="g", alpha=0.1)
         pspecs_pred.append(yvals_pred)
