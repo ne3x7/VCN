@@ -58,39 +58,30 @@ class myImageFloder(data.Dataset):
     def __getitem__(self, index):
         th, tw = self.shape
 
-        if np.random.rand() > 0.3:
-            iml0 = self.iml0[index]
-            iml1 = self.iml1[index]
+        if np.random.rand() > 0.95:
             flowl0 = self.flowl0[index]
-
-            iml0 = self.loader(iml0)
-            iml1 = self.loader(iml1)
-            iml1 = np.asarray(iml1) / 255.
-            iml0 = np.asarray(iml0) / 255.
-            iml0 = iml0[:, :, None].copy()  # iml0[:,:,::-1].copy()
-            iml1 = iml1[:, :, None].copy()  # iml1[:,:,::-1].copy()
             flowl0 = self.dploader(flowl0)
         else:
             flowl0 = random_incompressible_flow(
                 1,
                 self.shape,
-                10. ** (2 * np.random.rand()),
-                incompressible=False
-            )
-            iml0, iml1 = image_from_flow(
-                ppp=np.random.uniform(0.008, 0.1),
-                pip=np.random.uniform(0.95, 1.0),
-                flow=flowl0,
-                intensity_bounds=(0.8, 1),
-                diameter_bounds=(0.35, 6)
-            )
-            iml0 = iml0.transpose(1, 2, 0).copy()
-            iml1 = iml1.transpose(1, 2, 0).copy()
-            flowl0 = flowl0[0]
-            flowl0 = np.concatenate([
-                flowl0,
-                np.ones(flowl0.shape[:-1] + (1,), dtype=flowl0.dtype)
-            ], axis=-1)
+                np.random.choice(np.arange(50, 201, 10)),
+                incompressible=np.random.rand() > 0.99
+            ) * np.random.choice([1] + np.arange(10, 201, 10).tolist())
+        iml0, iml1 = image_from_flow(
+            ppp=np.random.uniform(0.008, 0.1),
+            pip=np.random.uniform(0.95, 1.0),
+            flow=flowl0,
+            intensity_bounds=(0.8, 1),
+            diameter_bounds=(0.35, 6)
+        )
+        iml0 = iml0.transpose(1, 2, 0).copy()
+        iml1 = iml1.transpose(1, 2, 0).copy()
+        flowl0 = flowl0[0]
+        flowl0 = np.concatenate([
+            flowl0,
+            np.ones(flowl0.shape[:-1] + (1,), dtype=flowl0.dtype)
+        ], axis=-1)
 
         flowl0 = np.ascontiguousarray(flowl0, dtype=np.float32)
         flowl0[np.isnan(flowl0)] = 1e6  # set to max
