@@ -60,7 +60,7 @@ class myImageFloder(data.Dataset):
 
         if np.random.rand() > 0.95:
             flowl0 = self.flowl0[index]
-            flowl0 = self.dploader(flowl0)
+            flowl0 = np.expand_dims(self.dploader(flowl0), 0)
         else:
             flowl0 = random_incompressible_flow(
                 1,
