@@ -60,11 +60,11 @@ class myImageFloder(data.Dataset):
 
         if np.random.rand() > 0.95:
             flowl0 = self.flowl0[index]
-            flowl0 = np.expand_dims(self.dploader(flowl0), 0)
+            flowl0 = self.dploader(flowl0)  # (h, w, 3)
             iml0, iml1 = image_from_flow(
                 ppp=np.random.uniform(0.008, 0.1),
                 pip=np.random.uniform(0.95, 1.0),
-                flow=flowl0[..., :-1],
+                flow=np.expand_dims(flowl0, axis=0)[..., :-1],  # (1, h, w, 2)
                 intensity_bounds=(0.8, 1),
                 diameter_bounds=(0.35, 6)
             )
@@ -76,7 +76,7 @@ class myImageFloder(data.Dataset):
                 self.shape,
                 np.random.choice(np.arange(50, 201, 10)),
                 incompressible=np.random.rand() > 0.99
-            ) * np.random.choice([1] + np.arange(10, 201, 10).tolist())
+            ) * np.random.choice([1] + np.arange(10, 201, 10).tolist())  # (1, h, w, 2)
             iml0, iml1 = image_from_flow(
                 ppp=np.random.uniform(0.008, 0.1),
                 pip=np.random.uniform(0.95, 1.0),
