@@ -75,7 +75,7 @@ class myImageFloder(data.Dataset):
                 1,
                 self.shape,
                 np.random.choice(np.arange(50, 201, 10)),
-                incompressible=np.random.rand() > 0.99
+                incompressible=False
             ) * np.random.choice([1] + np.arange(10, 201, 10).tolist())  # (1, h, w, 2)
             iml0, iml1 = image_from_flow(
                 ppp=np.random.uniform(0.008, 0.1),
